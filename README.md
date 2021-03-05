@@ -5,7 +5,7 @@ Build
 -----
 
 ```
-docker build -t turbo-enigma
+docker build -t turbo-enigma .
 ```
 
 Run
