@@ -1,0 +1,6 @@
+apiVersion: v2
+name: turbo-enigma
+description: ⚡️ Gitlab notifier for Slack 🔋
+type: application
+version: 0.1.1
+appVersion: "0.1.1"
