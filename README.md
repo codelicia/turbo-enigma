@@ -12,7 +12,7 @@ Run
 ---
 
 ```
-docker run -it --rm -p 8000:8080 turbo-enigma
+docker run -it --rm -p 8000:80 turbo-enigma
 ```
 
 Testing
