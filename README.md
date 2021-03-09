@@ -26,5 +26,5 @@ Testing
 -------
 
 ```
-curl localhost:8000 -d payload.yaml
+curl localhost:8000 -d @payload.yaml
 ```

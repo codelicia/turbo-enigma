@@ -3,14 +3,13 @@ package main
 import(
     "bytes"
     "fmt"
+    "html"
     "io/ioutil"
     "net/http"
     "os"
 )
 
 func postJson(url string, json []byte) (error) {
-    fmt.Println("url:", url)
-
     req, err := http.NewRequest("POST", url, bytes.NewBuffer(json))
 
     req.Header.Set("Content-Type", "application/json")
@@ -18,27 +17,24 @@ func postJson(url string, json []byte) (error) {
     client := &http.Client{}
 
     resp, err := client.Do(req)
-    if err != nil {
-        fmt.Println(err)
-    }
 
     fmt.Println("response Status:", resp.Status)
     fmt.Println("response Headers:", resp.Header)
 
-    body, _ := ioutil.ReadAll(resp.Body)
+    body, err := ioutil.ReadAll(resp.Body)
+
     fmt.Println("response Body:", string(body))
-    if err != nil {
-        fmt.Println(err)
-    }
 
     defer resp.Body.Close()
     return err
 }
 
 func defaultHandler(writer http.ResponseWriter, request *http.Request) {
+    body, _ := ioutil.ReadAll(request.Body)
+    fmt.Println("request Body:", string(body))
 
     var url = os.Getenv("WEBHOOK_URL")
-    var json = []byte(`{"text":"Hi"}`)
+    var json = []byte(`{"text":"` + html.EscapeString(string(body)) + `"}`)
 
     err := postJson(url, json)
     if err != nil {
@@ -51,7 +47,9 @@ func defaultHandler(writer http.ResponseWriter, request *http.Request) {
 
 func main() {
     var server = fmt.Sprintf("0.0.0.0:%s", os.Getenv("HTTP_PORT"))
-    fmt.Printf("Server listening on %s", server)
+
+    fmt.Println("Server listening on", server)
+
     http.HandleFunc("/", defaultHandler)
     http.ListenAndServe(server, nil)
 }
