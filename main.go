@@ -21,11 +21,6 @@ func postJson(url string, json []byte) error {
 	fmt.Println("response Status:", resp.Status)
 	fmt.Println("response Headers:", resp.Header)
 
-	body, err := ioutil.ReadAll(resp.Body)
-
-	fmt.Println("response Body:", string(body))
-
-	defer resp.Body.Close()
 	return err
 }
 
