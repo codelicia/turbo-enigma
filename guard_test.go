@@ -1,30 +1,33 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"testing"
 )
 
 func TestEnvironment(t *testing.T) {
-	err := guardEnvVars()
-	if err == nil {
-		t.Error("It fail to recognize that 'HTTP_PORT' is missing")
-	}
-	if err.Error() != "Missing HTTP_PORT in environment variable" {
-		t.Error("HTTP_PORT should be missing, but it is not.")
-	}
-
-	os.Setenv("HTTP_PORT", "8980")
-
-	err2 := guardEnvVars()
-	if err2 == nil {
-		t.Error("It fail to recognize that 'SLACK_WEBHOOK_URL' is missing")
-	}
-	if err2.Error() != "Missing SLACK_WEBHOOK_URL in environment variable" {
-		t.Error("SLACK_WEBHOOK_URL should be missing, but it is not.")
+	tt := []struct {
+		envVar   string
+		envValue string
+	}{
+		{"HTTP_PORT", "8980"},
+		{"SLACK_WEBHOOK_URL", "http://turboenigma.localhost"},
 	}
 
-	os.Setenv("SLACK_WEBHOOK_URL", "http://turboenigma.localhost")
+	for _, tc := range tt {
+		t.Run(tc.envVar, func(t *testing.T) {
+			err := guardEnvVars()
+			if err == nil {
+				t.Errorf("It fail to recognize that '%s' is missing", tc.envVar)
+			}
+			if err.Error() != fmt.Sprintf("Missing %s in environment variable", tc.envVar) {
+				t.Errorf("%s should be missing, but it is not.", tc.envVar)
+			}
+
+			os.Setenv(tc.envVar, tc.envValue)
+		})
+	}
 
 	err3 := guardEnvVars()
 	if err3 != nil {
