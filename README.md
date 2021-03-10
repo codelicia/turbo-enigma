@@ -12,7 +12,7 @@ Deploying
 ---------
 
 ```
-helm upgrade my-enigma . --set slack.webhookUrl=$SLACK_WEBHOOK_URL
+helm upgrade --install my-enigma . --set slack.webhookUrl=$SLACK_WEBHOOK_URL
 ```
 
 Build
