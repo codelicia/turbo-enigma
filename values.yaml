@@ -2,3 +2,6 @@ image:
   repository: codelicia/turbo-enigma
   pullPolicy: Always
   tag: latest
+
+slack:
+  webhookUrl: http://slack-webhook.localhost

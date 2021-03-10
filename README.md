@@ -1,6 +1,20 @@
 Turbo Enigma ⚡️🔋
 =================
 
+Environment
+-----------
+
+```
+export SLACK_WEBHOOK_URL="https://find-me-on.slack.com"
+```
+
+Deploying
+---------
+
+```
+helm upgrade my-enigma . --set slack.webhookUrl=$SLACK_WEBHOOK_URL
+```
+
 Build
 -----
 
@@ -8,18 +22,11 @@ Build
 docker build -t turbo-enigma .
 ```
 
-Environment
------------
-
-```
-export WEBHOOK_URL="https://find-me-on.gitlab.com"
-```
-
 Run
 ---
 
 ```
-docker run -it --rm -p 8000:80 -e WEBHOOK_URL=$WEBHOOK_URL turbo-enigma
+docker run -it --rm -p 8000:80 -e SLACK_WEBHOOK_URL=$SLACK_WEBHOOK_URL turbo-enigma
 ```
 
 Testing
