@@ -33,8 +33,7 @@ func defaultHandler(writer http.ResponseWriter, request *http.Request) {
 	body, _ := ioutil.ReadAll(request.Body)
 	fmt.Println("request Body:", string(body))
 
-	var url = os.Getenv("WEBHOOK_URL")
-
+	var url = os.Getenv("SLACK_WEBHOOK_URL")
 	var json = []byte(`{"text":"` + html.EscapeString(string(body)) + `"}`)
 
 	err := postJson(url, json)
