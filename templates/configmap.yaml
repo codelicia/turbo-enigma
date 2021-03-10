@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}
 data:
-  WEBHOOK_URL: {{ .Values.slack.webhookUrl }}
+  SLACK_WEBHOOK_URL: {{ .Values.slack.webhookUrl }}
