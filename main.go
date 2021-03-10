@@ -2,28 +2,12 @@ package main
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"html"
 	"io/ioutil"
 	"net/http"
 	"os"
 )
-
-//Checking that an environment variable is present or not.
-func guardEnvVars() error {
-	_, httpHost := os.LookupEnv("HTTP_HOST")
-	if !httpHost {
-		return errors.New("Missing HTTP_HOST in environment variable")
-	}
-
-	_, slackWebhookUrl := os.LookupEnv("SLACK_WEBHOOK_URL")
-	if !slackWebhookUrl {
-		return errors.New("Missing SLACK_WEBHOOK_URL in environment variable")
-	}
-
-	return nil
-}
 
 func postJson(url string, json []byte) error {
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(json))
@@ -62,6 +46,9 @@ func defaultHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
+	// Check for required environment variables
+	guardEnvVars()
+
 	var server = fmt.Sprintf("0.0.0.0:%s", os.Getenv("HTTP_PORT"))
 
 	fmt.Println("Server listening on", server)

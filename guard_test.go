@@ -10,11 +10,11 @@ func TestEnvironment(t *testing.T) {
 	if err == nil {
 		t.Error("It fail to recognize that 'HTTP_PORT' is missing")
 	}
-	if err.Error() != "Missing HTTP_HOST in environment variable" {
-		t.Error("HTTP_HOST should be missing, but it is not.")
+	if err.Error() != "Missing HTTP_PORT in environment variable" {
+		t.Error("HTTP_PORT should be missing, but it is not.")
 	}
 
-	os.Setenv("HTTP_HOST", "8980")
+	os.Setenv("HTTP_PORT", "8980")
 
 	err2 := guardEnvVars()
 	if err2 == nil {
