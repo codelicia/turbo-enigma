@@ -18,10 +18,15 @@ func postJson(url string, json []byte) error {
 
 	resp, err := client.Do(req)
 
+	if err != nil {
+		fmt.Printf("Error: %s", err.Error())
+		return err
+	}
+
 	fmt.Println("response Status:", resp.Status)
 	fmt.Println("response Headers:", resp.Header)
 
-	return err
+	return nil
 }
 
 func defaultHandler(writer http.ResponseWriter, request *http.Request) {
