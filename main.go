@@ -3,8 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"html"
-	"io/ioutil"
 	"net/http"
 	"os"
 )
@@ -29,22 +27,6 @@ func postJson(url string, json []byte) error {
 	return nil
 }
 
-func defaultHandler(writer http.ResponseWriter, request *http.Request) {
-	body, _ := ioutil.ReadAll(request.Body)
-	fmt.Println("request Body:", string(body))
-
-	var url = os.Getenv("SLACK_WEBHOOK_URL")
-	var json = []byte(`{"text":"` + html.EscapeString(string(body)) + `"}`)
-
-	err := postJson(url, json)
-	if err != nil {
-		fmt.Fprintf(writer, "Error: %s", err.Error())
-		return
-	}
-
-	fmt.Fprintf(writer, "OK")
-}
-
 func main() {
 	// Check for required environment variables
 	guardEnvVars()
@@ -53,6 +35,6 @@ func main() {
 
 	fmt.Println("Server listening on", server)
 
-	http.HandleFunc("/", defaultHandler)
+	http.HandleFunc("/", postOnSlack)
 	http.ListenAndServe(server, nil)
 }
