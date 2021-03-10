@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       turboEnigma: {{ .Release.Name }}
@@ -11,6 +11,8 @@ spec:
     metadata:
       labels:
         turboEnigma: {{ .Release.Name }}
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
     spec:
       containers:
         - name: {{ .Chart.Name }}
