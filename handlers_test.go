@@ -24,7 +24,7 @@ func TestPostOnSlack(t *testing.T) {
 		}, nil
 	}
 
-	dat, err := ioutil.ReadFile("./payload.yaml")
+	dat, err := ioutil.ReadFile("./payload.json")
 	assert(err)
 
 	os.Setenv("SLACK_WEBHOOK_URL", url)

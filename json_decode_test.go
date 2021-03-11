@@ -6,7 +6,7 @@ import (
 )
 
 func TestJsonDecode(t *testing.T) {
-	dat, err := ioutil.ReadFile("./payload.yaml")
+	dat, err := ioutil.ReadFile("./payload.json")
 	assert(err)
 
 	mergeRequest := jsonDecode(string(dat))
