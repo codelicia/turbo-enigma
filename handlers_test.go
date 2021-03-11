@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -24,8 +23,6 @@ func TestPostOnSlack(t *testing.T) {
 			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`ok`))),
 		}, nil
 	}
-
-	fmt.Printf("value(%v)", Client)
 
 	dat, err := ioutil.ReadFile("./payload.yaml")
 	assert(err)

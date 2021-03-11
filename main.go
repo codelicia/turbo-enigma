@@ -33,10 +33,9 @@ func postJson(url string, message []byte) error {
 	resp, err := Client.Do(req)
 	assert(err)
 
-	fmt.Printf("value(%v)", resp)
-
-	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Headers:", resp.Header)
+	if resp.StatusCode != 200 {
+		fmt.Printf("Response codeStatus code: %d, expected 200\n", resp.StatusCode)
+	}
 
 	return nil
 }
