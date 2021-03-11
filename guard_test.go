@@ -29,8 +29,7 @@ func TestEnvironmentVariable(t *testing.T) {
 		})
 	}
 
-	err3 := guardEnvVars()
-	if err3 != nil {
+	if guardEnvVars() != nil {
 		t.Error("Environment variables was expected to be OK.")
 	}
 }
