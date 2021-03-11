@@ -13,19 +13,27 @@ func assert(e error) {
 	}
 }
 
-func postJson(url string, json []byte) error {
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(json))
+// HTTPClient interface
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+} 
+
+var (Client HTTPClient)
+
+func init() {
+	Client = &http.Client{}
+}
+
+func postJson(url string, message []byte) error {
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(message))
+	assert(err)
 
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	resp, err := Client.Do(req)
+	assert(err)
 
-	resp, err := client.Do(req)
-
-	if err != nil {
-		fmt.Printf("Error: %s", err.Error())
-		return err
-	}
+	fmt.Printf("value(%v)", resp)
 
 	fmt.Println("response Status:", resp.Status)
 	fmt.Println("response Headers:", resp.Header)
@@ -34,7 +42,6 @@ func postJson(url string, json []byte) error {
 }
 
 func main() {
-	// Check for required environment variables
 	guardEnvVars()
 
 	var server = fmt.Sprintf("0.0.0.0:%s", os.Getenv("HTTP_PORT"))

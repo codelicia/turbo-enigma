@@ -9,15 +9,19 @@ import (
 )
 
 func postOnSlack(writer http.ResponseWriter, request *http.Request) {
-	body, _ := ioutil.ReadAll(request.Body)
-	fmt.Println("request Body:", string(body))
+	body, err := ioutil.ReadAll(request.Body)
+	assert(err)
 
 	var url = os.Getenv("SLACK_WEBHOOK_URL")
-	var json = []byte(`{"text":"` + html.EscapeString(string(body)) + `"}`)
 
-	err := postJson(url, json)
-	if err != nil {
-		fmt.Fprintf(writer, "Error: %s", err.Error())
+	mr := jsonDecode(string(body))
+
+	var message = []byte(`{"text": "Merge Request Created by ` + html.EscapeString(mr.User.Name) + `"}`)
+
+	err2 := postJson(url, message)
+
+	if err2 != nil {
+		fmt.Fprintf(writer, "Error -> %s", err.Error())
 		return
 	}
 
