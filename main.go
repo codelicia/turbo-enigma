@@ -7,6 +7,12 @@ import (
 	"os"
 )
 
+func assert(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
 func postJson(url string, json []byte) error {
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(json))
 
