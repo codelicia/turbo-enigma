@@ -26,7 +26,9 @@ Run
 ---
 
 ```
-docker run -it --rm -p 8000:80 -e SLACK_WEBHOOK_URL=$SLACK_WEBHOOK_URL turbo-enigma
+docker run -it --rm -p 8000:80 \
+    -e SLACK_WEBHOOK_URL=$SLACK_WEBHOOK_URL \
+    -e MERGE_REQUEST_LABEL="codelicia-team" turbo-enigma
 ```
 
 Testing
