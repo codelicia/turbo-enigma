@@ -51,5 +51,6 @@ func main() {
 	fmt.Println("Server listening on", server)
 
 	http.HandleFunc("/", postOnSlack)
+	http.HandleFunc("/healthcheck", healthCheckOn)
 	http.ListenAndServe(server, nil)
 }

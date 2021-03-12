@@ -8,6 +8,10 @@ import (
 	"os"
 )
 
+func healthCheckOn(writer http.ResponseWriter, request *http.Request) {
+	fmt.Fprintf(writer, "It is alive!")
+}
+
 func postOnSlack(writer http.ResponseWriter, request *http.Request) {
 	body, err := ioutil.ReadAll(request.Body)
 	assert(err)
