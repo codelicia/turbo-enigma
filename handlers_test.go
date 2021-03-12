@@ -50,7 +50,7 @@ func TestPostOnSlack(t *testing.T) {
 func TestPostOnSlackWithInvalidLabel(t *testing.T) {
 	var url = "http://turboenigma.com"
 
-	dat, err := ioutil.ReadFile("./payload-invalid-label.yaml")
+	dat, err := ioutil.ReadFile("./payload-invalid-label.json")
 	assert(err)
 
 	os.Setenv("SLACK_WEBHOOK_URL", url)
