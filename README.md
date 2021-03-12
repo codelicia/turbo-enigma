@@ -12,7 +12,7 @@ Deploying
 ---------
 
 ```
-helm upgrade --install my-enigma . --set slack.webhookUrl=$SLACK_WEBHOOK_URL
+helm upgrade --install my-enigma helm --set slack.webhookUrl=$SLACK_WEBHOOK_URL --set gitlab.mergeRequestLabel=codelicia-team
 ```
 
 Build
