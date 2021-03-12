@@ -4,3 +4,6 @@ metadata:
   name: {{ .Release.Name }}
 data:
   SLACK_WEBHOOK_URL: {{ .Values.slack.webhookUrl }}
+  MESSAGE: {{ .Values.slack.message }}
+  MERGE_REQUEST_LABEL: {{ .Values.gitlab.mergeRequestLabel }}
+  HTTP_PORT: 80

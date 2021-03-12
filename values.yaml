@@ -5,3 +5,7 @@ image:
 
 slack:
   webhookUrl: http://slack-webhook.localhost
+  message: "New Merge Request Created"
+
+gitlab:
+  mergeRequestLabel: "Enabling Team"

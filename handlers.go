@@ -16,14 +16,24 @@ func postOnSlack(writer http.ResponseWriter, request *http.Request) {
 
 	mr := jsonDecode(string(body))
 
+	// Filter events by "MergeRequest" opened
+	if mr.EventType != "merge_request" && mr.ObjectAttributes.Action != "open" {
+		return
+	}
+
 	// Filtering by label
+	var matchLabel = false
 	for _, s := range mr.Labels {
-		if s.Title != "just-testing" {
-			return
+		if s.Title == os.Getenv("MERGE_REQUEST_LABEL") {
+			matchLabel = true
 		}
 	}
 
-	var message = []byte(`{"text": "Merge Request Created by ` + html.EscapeString(mr.User.Name) + `"}`)
+	if matchLabel == false {
+		return
+	}
+
+	var message = []byte(`{"text": "` + os.Getenv("MESSAGE") + ` <` + html.EscapeString(mr.ObjectAttributes.URL) + `|` + html.EscapeString(mr.ObjectAttributes.Title) + `> by ` + html.EscapeString(mr.User.Name) + `"}`)
 
 	err2 := postJson(url, message)
 

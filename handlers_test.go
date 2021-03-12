@@ -28,6 +28,7 @@ func TestPostOnSlack(t *testing.T) {
 	assert(err)
 
 	os.Setenv("SLACK_WEBHOOK_URL", url)
+	os.Setenv("MERGE_REQUEST_LABEL", "just-testing")
 	req, err := http.NewRequest(
 		http.MethodPost,
 		url,
@@ -50,10 +51,11 @@ func TestPostOnSlack(t *testing.T) {
 func TestPostOnSlackWithInvalidLabel(t *testing.T) {
 	var url = "http://turboenigma.com"
 
-	dat, err := ioutil.ReadFile("./payload-invalid-label.json")
+	dat, err := ioutil.ReadFile("./payload.json")
 	assert(err)
 
 	os.Setenv("SLACK_WEBHOOK_URL", url)
+	os.Setenv("MERGE_REQUEST_LABEL", "invalid-label")
 	req, err := http.NewRequest(
 		http.MethodPost,
 		url,
