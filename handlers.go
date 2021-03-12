@@ -18,6 +18,11 @@ func postOnSlack(writer http.ResponseWriter, request *http.Request) {
 
 	var url = os.Getenv("SLACK_WEBHOOK_URL")
 
+	if string(body) == "" {
+		http.Error(writer, "Body is missing", http.StatusBadRequest)
+		return
+	}
+
 	mr := jsonDecode(string(body))
 
 	// Filter events by "MergeRequest" opened
@@ -42,7 +47,7 @@ func postOnSlack(writer http.ResponseWriter, request *http.Request) {
 	err2 := postJson(url, message)
 
 	if err2 != nil {
-		fmt.Fprintf(writer, "Error -> %s", err.Error())
+		http.Error(writer, fmt.Sprintf("Error -> %s", err2.Error()), http.StatusBadRequest)
 		return
 	}
 
