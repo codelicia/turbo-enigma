@@ -1,6 +1,6 @@
 FROM golang:1.16-alpine
 WORKDIR /go/src/app
-ADD main.go .
+ADD . .
 ENV HTTP_PORT=80
 ENV MESSAGE="New Merge Request Created"
 ENV SLACK_WEBHOOK_URL="http://turboenigma.localhost"
