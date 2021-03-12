@@ -27,5 +27,15 @@ func guardEnvVars() error {
 		return errors.New("Missing MERGE_REQUEST_LABEL in environment variable")
 	}
 
+	_, slackUsername := os.LookupEnv("SLACK_USERNAME")
+	if !slackUsername {
+		return errors.New("Missing SLACK_USERNAME in environment variable")
+	}
+
+	_, slackAvatarUrl := os.LookupEnv("SLACK_AVATAR_URL")
+	if !slackAvatarUrl {
+		return errors.New("Missing SLACK_AVATAR_URL in environment variable")
+	}
+
 	return nil
 }

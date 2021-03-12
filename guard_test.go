@@ -15,6 +15,8 @@ func TestEnvironmentVariable(t *testing.T) {
 		{"SLACK_WEBHOOK_URL", "http://turboenigma.localhost"},
 		{"MESSAGE", "I need review on "},
 		{"MERGE_REQUEST_LABEL", "codelicia-team"},
+		{"SLACK_USERNAME", "codelicia/turbo-enigma"},
+		{"SLACK_AVATAR_URL", "https://avatars.githubusercontent.com/u/46966179?s=200&v=4"},
 	}
 
 	for _, tc := range tt {

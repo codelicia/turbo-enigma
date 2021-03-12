@@ -42,7 +42,18 @@ func postOnSlack(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	var message = []byte(`{"text": "` + os.Getenv("MESSAGE") + ` <` + html.EscapeString(mr.ObjectAttributes.URL) + `|` + html.EscapeString(mr.ObjectAttributes.Title) + `> by ` + html.EscapeString(mr.User.Name) + `"}`)
+	var template = "{'text': '%s <%s|%s> by %s', 'icon_url': '%s', 'username': '%s'}"
+
+	var formating = fmt.Sprintf(
+		template,
+		os.Getenv("MESSAGE"),
+		html.EscapeString(mr.ObjectAttributes.URL),
+		html.EscapeString(mr.ObjectAttributes.Title),
+		html.EscapeString(mr.User.Name),
+		"https://avatars.githubusercontent.com/u/46966179?s=200&v=4",
+		"codelicia/turbo-enigma",
+	)
+	var message = []byte(formating)
 
 	err2 := postJson(url, message)
 

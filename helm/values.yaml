@@ -4,8 +4,10 @@ image:
   tag: latest
 
 slack:
-  webhookUrl: http://slack-webhook.localhost
+  avatarUrl: "https://avatars.githubusercontent.com/u/46966179?s=200&v=4"
   message: "New Merge Request Created"
+  username: "codelicia/turbo-enigma"
+  webhookUrl: http://slack-webhook.localhost
 
 gitlab:
   mergeRequestLabel: "Enabling Team"
