@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -36,7 +37,7 @@ func postJson(url string, message []byte) error {
 	assert(err)
 
 	if resp.StatusCode != 200 {
-		fmt.Printf("Response codeStatus code: %d, expected 200\n", resp.StatusCode)
+		return errors.New(fmt.Sprintf("Response codeStatus code: %d, expected 200\n", resp.StatusCode))
 	}
 
 	return nil

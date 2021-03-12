@@ -16,6 +16,13 @@ func postOnSlack(writer http.ResponseWriter, request *http.Request) {
 
 	mr := jsonDecode(string(body))
 
+	// Filtering by label
+	for _, s := range mr.Labels {
+		if s.Title != "just-testing" {
+			return
+		}
+	}
+
 	var message = []byte(`{"text": "Merge Request Created by ` + html.EscapeString(mr.User.Name) + `"}`)
 
 	err2 := postJson(url, message)
