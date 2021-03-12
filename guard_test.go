@@ -13,6 +13,8 @@ func TestEnvironmentVariable(t *testing.T) {
 	}{
 		{"HTTP_PORT", "8980"},
 		{"SLACK_WEBHOOK_URL", "http://turboenigma.localhost"},
+		{"MESSAGE", "I need review on "},
+		{"MERGE_REQUEST_LABEL", "codelicia-team"},
 	}
 
 	for _, tc := range tt {

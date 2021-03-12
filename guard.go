@@ -17,5 +17,15 @@ func guardEnvVars() error {
 		return errors.New("Missing SLACK_WEBHOOK_URL in environment variable")
 	}
 
+	_, message := os.LookupEnv("MESSAGE")
+	if !message {
+		return errors.New("Missing MESSAGE in environment variable")
+	}
+
+	_, mergeRequestLabel := os.LookupEnv("MERGE_REQUEST_LABEL")
+	if !mergeRequestLabel {
+		return errors.New("Missing MERGE_REQUEST_LABEL in environment variable")
+	}
+
 	return nil
 }
