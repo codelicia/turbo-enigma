@@ -50,8 +50,8 @@ func postOnSlack(writer http.ResponseWriter, request *http.Request) {
 		html.EscapeString(mr.ObjectAttributes.URL),
 		html.EscapeString(mr.ObjectAttributes.Title),
 		html.EscapeString(mr.User.Name),
-		"https://avatars.githubusercontent.com/u/46966179?s=200&v=4",
-		"codelicia/turbo-enigma",
+		os.Getenv("SLACK_AVATAR_URL"),
+		os.Getenv("SLACK_USERNAME"),
 	)
 	var message = []byte(formating)
 
