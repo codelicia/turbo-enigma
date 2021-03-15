@@ -1,12 +1,11 @@
-package main
+package pkg
 
 import (
 	"errors"
 	"os"
 )
 
-//Checking that an environment variable is present or not.
-func guardEnvVars() error {
+func GuardEnvVars() error {
 	_, httpHost := os.LookupEnv("HTTP_PORT")
 	if !httpHost {
 		return errors.New("Missing HTTP_PORT in environment variable")
@@ -38,4 +37,10 @@ func guardEnvVars() error {
 	}
 
 	return nil
+}
+
+func Assert(e error) {
+	if e != nil {
+		panic(e)
+	}
 }

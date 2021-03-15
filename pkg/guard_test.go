@@ -1,9 +1,10 @@
-package main
+package pkg_test
 
 import (
 	"fmt"
 	"os"
 	"testing"
+	"turboenigma/pkg"
 )
 
 func TestEnvironmentVariable(t *testing.T) {
@@ -21,7 +22,9 @@ func TestEnvironmentVariable(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.envVar, func(t *testing.T) {
-			err := guardEnvVars()
+			os.Unsetenv(tc.envVar)
+
+			err := pkg.GuardEnvVars()
 			if err == nil {
 				t.Errorf("It fail to recognize that '%s' is missing", tc.envVar)
 			}
@@ -33,7 +36,7 @@ func TestEnvironmentVariable(t *testing.T) {
 		})
 	}
 
-	if guardEnvVars() != nil {
+	if pkg.GuardEnvVars() != nil {
 		t.Error("Environment variables was expected to be OK.")
 	}
 }
