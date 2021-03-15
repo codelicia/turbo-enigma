@@ -1,10 +1,10 @@
-package main
+package pkg
 
 import (
 	"encoding/json"
 )
 
-func jsonDecode(jsonString string) MergeRequestInfo {
+func JsonDecode(jsonString string) MergeRequestInfo {
 	var mergeRequest MergeRequestInfo
 
 	if err := json.Unmarshal([]byte(jsonString), &mergeRequest); err != nil {

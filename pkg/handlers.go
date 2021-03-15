@@ -1,4 +1,4 @@
-package main
+package pkg
 
 import (
 	"fmt"
@@ -8,13 +8,13 @@ import (
 	"os"
 )
 
-func healthCheckOn(writer http.ResponseWriter, request *http.Request) {
+func HealthCheckOn(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(writer, "It is alive!")
 }
 
-func postOnSlack(writer http.ResponseWriter, request *http.Request) {
+func PostOnSlack(writer http.ResponseWriter, request *http.Request) {
 	body, err := ioutil.ReadAll(request.Body)
-	assert(err)
+	Assert(err)
 
 	var url = os.Getenv("SLACK_WEBHOOK_URL")
 
@@ -23,7 +23,7 @@ func postOnSlack(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	mr := jsonDecode(string(body))
+	mr := JsonDecode(string(body))
 
 	// Filter events by "MergeRequest" opened
 	if mr.EventType != "merge_request" && mr.ObjectAttributes.Action != "open" {
@@ -55,7 +55,7 @@ func postOnSlack(writer http.ResponseWriter, request *http.Request) {
 	)
 	var message = []byte(formating)
 
-	err2 := postJson(url, message)
+	err2 := PostJson(url, message)
 
 	if err2 != nil {
 		http.Error(writer, fmt.Sprintf("Error -> %s", err2.Error()), http.StatusBadRequest)

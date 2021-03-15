@@ -1,4 +1,4 @@
-package main
+package pkg_test
 
 import (
 	"bytes"
@@ -8,16 +8,17 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"turboenigma/pkg"
 )
 
 func init() {
-	Client = &MockClient{}
+	pkg.Client = &pkg.MockClient{}
 }
 
 func TestPostOnSlack(t *testing.T) {
 	var url = "http://turboenigma.com"
 
-	GetDoFunc = func(*http.Request) (*http.Response, error) {
+	pkg.GetDoFunc = func(*http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: 200,
 			Body:       ioutil.NopCloser(bytes.NewReader([]byte(`ok`))),
@@ -25,7 +26,7 @@ func TestPostOnSlack(t *testing.T) {
 	}
 
 	dat, err := ioutil.ReadFile("./payload.json")
-	assert(err)
+	pkg.Assert(err)
 
 	os.Setenv("SLACK_WEBHOOK_URL", url)
 	os.Setenv("MERGE_REQUEST_LABEL", "just-testing")
@@ -41,7 +42,7 @@ func TestPostOnSlack(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 
-	postOnSlack(rec, req)
+	pkg.PostOnSlack(rec, req)
 
 	if string(rec.Body.Bytes()) != "OK" {
 		t.Errorf("rec.Body should be 'OK'; '%v' given", string(rec.Body.Bytes()))
@@ -52,7 +53,7 @@ func TestPostOnSlackWithInvalidLabel(t *testing.T) {
 	var url = "http://turboenigma.com"
 
 	dat, err := ioutil.ReadFile("./payload.json")
-	assert(err)
+	pkg.Assert(err)
 
 	os.Setenv("SLACK_WEBHOOK_URL", url)
 	os.Setenv("MERGE_REQUEST_LABEL", "invalid-label")
@@ -68,7 +69,7 @@ func TestPostOnSlackWithInvalidLabel(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 
-	postOnSlack(rec, req)
+	pkg.PostOnSlack(rec, req)
 
 	if string(rec.Body.Bytes()) != "" {
 		t.Errorf("rec.Body should be 'OK'; '%v' given", string(rec.Body.Bytes()))

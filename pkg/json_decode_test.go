@@ -1,15 +1,16 @@
-package main
+package pkg_test
 
 import (
 	"io/ioutil"
 	"testing"
+	"turboenigma/pkg"
 )
 
 func TestJsonDecode(t *testing.T) {
 	dat, err := ioutil.ReadFile("./payload.json")
-	assert(err)
+	pkg.Assert(err)
 
-	mergeRequest := jsonDecode(string(dat))
+	mergeRequest := pkg.JsonDecode(string(dat))
 
 	if mergeRequest.User.Username != "alexandre.eher" {
 		t.Errorf("Expected ''; got %v", mergeRequest.User.Username)
