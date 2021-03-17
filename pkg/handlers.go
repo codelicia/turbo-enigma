@@ -30,6 +30,10 @@ func PostOnSlack(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	if mr.Changes.CreatedAt.Previous != nil {
+		return
+	}
+
 	// Filtering by label
 	var matchLabel = false
 	for _, s := range mr.Labels {
