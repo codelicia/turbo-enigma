@@ -35,5 +35,5 @@ Testing
 -------
 
 ```
-curl localhost:8000 -d @payload.json
+curl localhost:8000 -d @pkg/payload/merge_request-open.json
 ```

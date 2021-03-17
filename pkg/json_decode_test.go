@@ -7,7 +7,7 @@ import (
 )
 
 func TestJsonDecode(t *testing.T) {
-	dat, err := ioutil.ReadFile("./payload.json")
+	dat, err := ioutil.ReadFile("./payload/merge_request-open.json")
 	pkg.Assert(err)
 
 	mergeRequest := pkg.JsonDecode(string(dat))
