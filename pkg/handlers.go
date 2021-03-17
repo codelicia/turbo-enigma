@@ -26,11 +26,8 @@ func PostOnSlack(writer http.ResponseWriter, request *http.Request) {
 	mr := JsonDecode(string(body))
 
 	// Filter events by "MergeRequest" opened
-	if mr.EventType != "merge_request" && mr.ObjectAttributes.Action != "open" {
-		return
-	}
-
-	if mr.Changes.CreatedAt.Previous != nil {
+	if mr.EventType != "merge_request" || mr.ObjectAttributes.Action != "open" {
+		fmt.Fprintf(writer, "We just care about new merge_requests")
 		return
 	}
 
@@ -43,6 +40,7 @@ func PostOnSlack(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	if matchLabel == false {
+		fmt.Fprintf(writer, "We didn't find the right label")
 		return
 	}
 

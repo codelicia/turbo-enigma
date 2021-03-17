@@ -25,11 +25,13 @@ func TestPostOnSlack(t *testing.T) {
 		}, nil
 	}
 
-	dat, err := ioutil.ReadFile("./payload.json")
+	dat, err := ioutil.ReadFile("./payload/merge_request-open.json")
 	pkg.Assert(err)
 
 	os.Setenv("SLACK_WEBHOOK_URL", url)
 	os.Setenv("MERGE_REQUEST_LABEL", "just-testing")
+
+	rec := httptest.NewRecorder()
 	req, err := http.NewRequest(
 		http.MethodPost,
 		url,
@@ -39,8 +41,6 @@ func TestPostOnSlack(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not create request %v", err)
 	}
-
-	rec := httptest.NewRecorder()
 
 	pkg.PostOnSlack(rec, req)
 
@@ -49,14 +49,39 @@ func TestPostOnSlack(t *testing.T) {
 	}
 }
 
-func TestPostOnSlackWithInvalidLabel(t *testing.T) {
+func TestPostOnSlackWithEmptyBody(t *testing.T) {
 	var url = "http://turboenigma.com"
 
-	dat, err := ioutil.ReadFile("./payload.json")
+	os.Setenv("SLACK_WEBHOOK_URL", url)
+	os.Setenv("MERGE_REQUEST_LABEL", "just-testing")
+
+	rec := httptest.NewRecorder()
+	req, _ := http.NewRequest(
+		http.MethodPost,
+		url,
+		strings.NewReader(""),
+	)
+
+	pkg.PostOnSlack(rec, req)
+
+	if string(rec.Body.Bytes()) != "Body is missing\n" {
+		t.Errorf("Emtpy body should be validated; '%v' given on body", string(rec.Body.Bytes()))
+	}
+	if rec.Result().StatusCode != http.StatusBadRequest {
+		t.Errorf("Expected bad request status code; '%v' given", rec.Result().StatusCode)
+	}
+}
+
+func TestPostOnSlackWithIgnoredLabel(t *testing.T) {
+	var url = "http://turboenigma.com"
+
+	dat, err := ioutil.ReadFile("./payload/merge_request-open.json")
 	pkg.Assert(err)
 
 	os.Setenv("SLACK_WEBHOOK_URL", url)
 	os.Setenv("MERGE_REQUEST_LABEL", "invalid-label")
+
+	rec := httptest.NewRecorder()
 	req, err := http.NewRequest(
 		http.MethodPost,
 		url,
@@ -67,11 +92,63 @@ func TestPostOnSlackWithInvalidLabel(t *testing.T) {
 		t.Fatalf("could not create request %v", err)
 	}
 
+	pkg.PostOnSlack(rec, req)
+
+	if string(rec.Body.Bytes()) != "We didn't find the right label" {
+		t.Errorf("Label should be ignored; '%v' given on body", string(rec.Body.Bytes()))
+	}
+}
+
+func TestPostOnSlackWithNewIssue(t *testing.T) {
+	var url = "http://turboenigma.com"
+
+	dat, err := ioutil.ReadFile("./payload/issue-open.json")
+	pkg.Assert(err)
+
+	os.Setenv("SLACK_WEBHOOK_URL", url)
+	os.Setenv("MERGE_REQUEST_LABEL", "just-testing")
+
 	rec := httptest.NewRecorder()
+	req, err := http.NewRequest(
+		http.MethodPost,
+		url,
+		strings.NewReader(string(dat)),
+	)
+
+	if err != nil {
+		t.Fatalf("could not create request %v", err)
+	}
 
 	pkg.PostOnSlack(rec, req)
 
-	if string(rec.Body.Bytes()) != "" {
-		t.Errorf("rec.Body should be 'OK'; '%v' given", string(rec.Body.Bytes()))
+	if string(rec.Body.Bytes()) != "We just care about new merge_requests" {
+		t.Errorf("Event should be ignored; '%v' given on body", string(rec.Body.Bytes()))
+	}
+}
+
+func TestPostOnSlackWithMergeRequestApproved(t *testing.T) {
+	var url = "http://turboenigma.com"
+
+	dat, err := ioutil.ReadFile("./payload/merge_request-approved.json")
+	pkg.Assert(err)
+
+	os.Setenv("SLACK_WEBHOOK_URL", url)
+	os.Setenv("MERGE_REQUEST_LABEL", "just-testing")
+
+	rec := httptest.NewRecorder()
+	req, err := http.NewRequest(
+		http.MethodPost,
+		url,
+		strings.NewReader(string(dat)),
+	)
+
+	if err != nil {
+		t.Fatalf("could not create request %v", err)
+	}
+
+	pkg.PostOnSlack(rec, req)
+
+	if string(rec.Body.Bytes()) != "We just care about new merge_requests" {
+		t.Errorf("Event should be ignored; '%v' given on body", string(rec.Body.Bytes()))
 	}
 }
