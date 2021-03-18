@@ -1,9 +1,10 @@
-package pkg
+package models
 
 import "time"
 
 // Generated via https://mholt.github.io/json-to-go/
 
+// MergeRequestInfo defines the data model of a single Merge Request
 type MergeRequestInfo struct {
 	ObjectKind string `json:"object_kind"`
 	EventType  string `json:"event_type"`
