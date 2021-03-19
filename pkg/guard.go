@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	"errors"
+	"fmt"
 	"os"
 )
 
@@ -16,9 +16,8 @@ func GuardEnvVars() error {
 	}
 
 	for _, env := range envs {
-		_, value := os.LookupEnv(env)
-		if !value {
-			return errors.New("Missing " + env + " in environment variable")
+		if _, value := os.LookupEnv(env); !value {
+			return fmt.Errorf("missing %s in environment variable", env)
 		}
 	}
 

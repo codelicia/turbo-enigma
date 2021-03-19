@@ -2,12 +2,11 @@ package pkg
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"net/http"
 )
 
-func PostJson(url string, message []byte) error {
+func PostJSON(url string, message []byte) error {
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(message))
 	Assert(err)
 
@@ -17,7 +16,7 @@ func PostJson(url string, message []byte) error {
 	Assert(err)
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.New(fmt.Sprintf("Response codeStatus code: %d, expected 200\n", resp.StatusCode))
+		return fmt.Errorf("response codeStatus code: %d, expected 200", resp.StatusCode)
 	}
 
 	return nil

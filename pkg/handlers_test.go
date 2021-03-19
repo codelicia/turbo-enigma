@@ -44,8 +44,8 @@ func TestPostOnSlack(t *testing.T) {
 
 	pkg.PostOnSlack(rec, req)
 
-	if string(rec.Body.Bytes()) != "OK" {
-		t.Errorf("rec.Body should be 'OK'; '%v' given", string(rec.Body.Bytes()))
+	if strings.Compare(rec.Body.String(),"OK") != 0 {
+		t.Errorf("rec.Body should be 'OK'; '%v' given", rec.Body.String())
 	}
 }
 
@@ -64,8 +64,8 @@ func TestPostOnSlackWithEmptyBody(t *testing.T) {
 
 	pkg.PostOnSlack(rec, req)
 
-	if string(rec.Body.Bytes()) != "Body is missing\n" {
-		t.Errorf("Emtpy body should be validated; '%v' given on body", string(rec.Body.Bytes()))
+	if rec.Body.String() != "Body is missing\n" {
+		t.Errorf("Empty body should be validated; '%v' given on body", rec.Body.String())
 	}
 	if rec.Result().StatusCode != http.StatusBadRequest {
 		t.Errorf("Expected bad request status code; '%v' given", rec.Result().StatusCode)
@@ -94,8 +94,8 @@ func TestPostOnSlackWithIgnoredLabel(t *testing.T) {
 
 	pkg.PostOnSlack(rec, req)
 
-	if string(rec.Body.Bytes()) != "We didn't find the right label" {
-		t.Errorf("Label should be ignored; '%v' given on body", string(rec.Body.Bytes()))
+	if rec.Body.String() != "We didn't find the right label" {
+		t.Errorf("Label should be ignored; '%v' given on body", rec.Body.String())
 	}
 }
 
@@ -121,8 +121,8 @@ func TestPostOnSlackWithNewIssue(t *testing.T) {
 
 	pkg.PostOnSlack(rec, req)
 
-	if string(rec.Body.Bytes()) != "We just care about new merge_requests" {
-		t.Errorf("Event should be ignored; '%v' given on body", string(rec.Body.Bytes()))
+	if rec.Body.String() != "We just care about new merge_requests" {
+		t.Errorf("Event should be ignored; '%v' given on body", rec.Body.String())
 	}
 }
 
@@ -148,7 +148,7 @@ func TestPostOnSlackWithMergeRequestApproved(t *testing.T) {
 
 	pkg.PostOnSlack(rec, req)
 
-	if string(rec.Body.Bytes()) != "We just care about new merge_requests" {
-		t.Errorf("Event should be ignored; '%v' given on body", string(rec.Body.Bytes()))
+	if rec.Body.String() != "We just care about new merge_requests" {
+		t.Errorf("Event should be ignored; '%v' given on body", rec.Body.String())
 	}
 }

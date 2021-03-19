@@ -5,12 +5,9 @@ import (
 	"turboenigma/models"
 )
 
-func JsonDecode(jsonString string) models.MergeRequestInfo {
-	var mergeRequest models.MergeRequestInfo
+func JSONDecode(jsonString string) (mergeRequest models.MergeRequestInfo) {
+	err := json.Unmarshal([]byte(jsonString), &mergeRequest)
+	Assert(err)
 
-	if err := json.Unmarshal([]byte(jsonString), &mergeRequest); err != nil {
-		panic(err)
-	}
-
-	return mergeRequest
+	return
 }

@@ -28,8 +28,8 @@ func TestEnvironmentVariable(t *testing.T) {
 			if err == nil {
 				t.Errorf("It fail to recognize that '%s' is missing", tc.envVar)
 			}
-			if err.Error() != fmt.Sprintf("Missing %s in environment variable", tc.envVar) {
-				t.Errorf("%s should be missing, but it is not.", tc.envVar)
+			if err.Error() != fmt.Sprintf("missing %s in environment variable", tc.envVar) {
+				t.Errorf("%s should be missing, but it is not", tc.envVar)
 			}
 
 			os.Setenv(tc.envVar, tc.envValue)
@@ -37,6 +37,6 @@ func TestEnvironmentVariable(t *testing.T) {
 	}
 
 	if pkg.GuardEnvVars() != nil {
-		t.Error("Environment variables was expected to be OK.")
+		t.Error("Environment variables was expected to be OK")
 	}
 }
