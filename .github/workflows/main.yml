@@ -18,3 +18,8 @@ jobs:
 
       - name: Go tests
         run: go test -race -v ./...
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
