@@ -9,7 +9,7 @@ import (
 )
 
 func HealthCheckOn(writer http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(writer, "It is alive!")
+	fmt.Fprint(writer, "It is alive!")
 }
 
 func PostOnSlack(writer http.ResponseWriter, request *http.Request) {
@@ -23,11 +23,11 @@ func PostOnSlack(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	mr := JsonDecode(string(body))
+	mr := JSONDecode(string(body))
 
 	// Filter events by "MergeRequest" opened
 	if mr.EventType != "merge_request" || mr.ObjectAttributes.Action != "open" {
-		fmt.Fprintf(writer, "We just care about new merge_requests")
+		fmt.Fprint(writer, "We just care about new merge_requests")
 		return
 	}
 
@@ -36,17 +36,18 @@ func PostOnSlack(writer http.ResponseWriter, request *http.Request) {
 	for _, s := range mr.Labels {
 		if s.Title == os.Getenv("MERGE_REQUEST_LABEL") {
 			matchLabel = true
+			break
 		}
 	}
 
-	if matchLabel == false {
-		fmt.Fprintf(writer, "We didn't find the right label")
+	if !matchLabel {
+		fmt.Fprint(writer, "We didn't find the right label")
 		return
 	}
 
 	var template = "{'text': '%s <%s|%s> by %s', 'icon_url': '%s', 'username': '%s'}"
 
-	var formating = fmt.Sprintf(
+	var formatting = fmt.Sprintf(
 		template,
 		os.Getenv("MESSAGE"),
 		html.EscapeString(mr.ObjectAttributes.URL),
@@ -55,14 +56,12 @@ func PostOnSlack(writer http.ResponseWriter, request *http.Request) {
 		os.Getenv("SLACK_AVATAR_URL"),
 		os.Getenv("SLACK_USERNAME"),
 	)
-	var message = []byte(formating)
+	var message = []byte(formatting)
 
-	err2 := PostJson(url, message)
-
-	if err2 != nil {
-		http.Error(writer, fmt.Sprintf("Error -> %s", err2.Error()), http.StatusBadRequest)
+	if err = PostJSON(url, message); err != nil {
+		http.Error(writer, fmt.Sprintf("Error -> %s", err.Error()), http.StatusBadRequest)
 		return
 	}
 
-	fmt.Fprintf(writer, "OK")
+	fmt.Fprint(writer, "OK")
 }

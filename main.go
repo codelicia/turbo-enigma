@@ -12,7 +12,9 @@ func init() {
 }
 
 func main() {
-	pkg.GuardEnvVars()
+	if err := pkg.GuardEnvVars(); err != nil {
+		panic(err)
+	}
 
 	var server = fmt.Sprintf("0.0.0.0:%s", os.Getenv("HTTP_PORT"))
 
@@ -20,5 +22,8 @@ func main() {
 
 	http.HandleFunc("/", pkg.PostOnSlack)
 	http.HandleFunc("/healthcheck", pkg.HealthCheckOn)
-	http.ListenAndServe(server, nil)
+
+	if err := http.ListenAndServe(server, nil); err != nil {
+		panic(err)
+	}
 }
