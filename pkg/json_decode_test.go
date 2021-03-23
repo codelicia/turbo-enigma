@@ -1,6 +1,7 @@
 package pkg_test
 
 import (
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
 	"turboenigma/pkg"
@@ -8,11 +9,9 @@ import (
 
 func TestJsonDecode(t *testing.T) {
 	dat, err := ioutil.ReadFile("./payload/merge_request-open.json")
-	pkg.Assert(err)
+	assert.Empty(t, err)
 
 	mergeRequest := pkg.JSONDecode(string(dat))
 
-	if mergeRequest.User.Username != "alexandre.eher" {
-		t.Errorf("Expected ''; got %v", mergeRequest.User.Username)
-	}
+	assert.Equal(t, "alexandre.eher", mergeRequest.User.Username)
 }
