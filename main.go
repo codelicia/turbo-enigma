@@ -3,20 +3,33 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"turboenigma/pkg"
+	"turboenigma/pkg/message"
 )
 
-func init() {
-	pkg.Client = &http.Client{}
-}
-
 func main() {
-	if err := pkg.GuardEnvVars(); err != nil {
+	envManager, err := pkg.NewEnv([]string{
+		"HTTP_PORT",
+		"SLACK_WEBHOOK_URL",
+		"MESSAGE",
+		"MERGE_REQUEST_LABEL",
+		"SLACK_USERNAME",
+		"SLACK_AVATAR_URL",
+	})
+	if err != nil {
 		panic(err)
 	}
 
-	var server = fmt.Sprintf("0.0.0.0:%s", os.Getenv("HTTP_PORT"))
+	pkg.EnvManager = envManager
+	pkg.Message = message.NewSlack(
+		http.DefaultClient,
+		pkg.EnvManager.Get("SLACK_WEBHOOK_URL"),
+		pkg.EnvManager.Get("MESSAGE"),
+		pkg.EnvManager.Get("SLACK_AVATAR_URL"),
+		pkg.EnvManager.Get("SLACK_USERNAME"),
+	)
+
+	var server = fmt.Sprintf("0.0.0.0:%s", pkg.EnvManager.Get("HTTP_PORT"))
 
 	fmt.Println("Server listening on", server)
 

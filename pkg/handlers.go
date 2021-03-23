@@ -2,10 +2,14 @@ package pkg
 
 import (
 	"fmt"
-	"html"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"turboenigma/pkg/message"
+)
+
+var(
+	Message message.Message
 )
 
 func HealthCheckOn(writer http.ResponseWriter, request *http.Request) {
@@ -14,9 +18,9 @@ func HealthCheckOn(writer http.ResponseWriter, request *http.Request) {
 
 func PostOnSlack(writer http.ResponseWriter, request *http.Request) {
 	body, err := ioutil.ReadAll(request.Body)
-	Assert(err)
-
-	var url = os.Getenv("SLACK_WEBHOOK_URL")
+	if err != nil {
+		http.Error(writer, fmt.Sprintf("Error -> %s", err.Error()), http.StatusBadRequest)
+	}
 
 	if string(body) == "" {
 		http.Error(writer, "Body is missing", http.StatusBadRequest)
@@ -45,22 +49,9 @@ func PostOnSlack(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	var template = "{'text': '%s <%s|%s> by %s', 'icon_url': '%s', 'username': '%s'}"
-
-	var formatting = fmt.Sprintf(
-		template,
-		os.Getenv("MESSAGE"),
-		html.EscapeString(mr.ObjectAttributes.URL),
-		html.EscapeString(mr.ObjectAttributes.Title),
-		html.EscapeString(mr.User.Name),
-		os.Getenv("SLACK_AVATAR_URL"),
-		os.Getenv("SLACK_USERNAME"),
-	)
-	var message = []byte(formatting)
-
-	if err = PostJSON(url, message); err != nil {
+	err = Message.SendPullRequestEvent(mr.ObjectAttributes.URL, mr.ObjectAttributes.Title, mr.User.Name)
+	if err != nil {
 		http.Error(writer, fmt.Sprintf("Error -> %s", err.Error()), http.StatusBadRequest)
-		return
 	}
 
 	fmt.Fprint(writer, "OK")
