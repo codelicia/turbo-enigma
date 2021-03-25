@@ -73,7 +73,7 @@ func TestPostOnSlackWithEmptyBody(t *testing.T) {
 	}
 	pkg.PostOnSlack(rec, req)
 
-	assert.Equal(t,"Body is missing\n", rec.Body.String())
+	assert.Equal(t,"Error -> Body is missing\n", rec.Body.String())
 	assert.Equal(t, http.StatusBadRequest, rec.Result().StatusCode)
 }
 
