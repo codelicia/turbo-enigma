@@ -2,10 +2,17 @@ package message
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
-	"html"
 	"net/http"
 )
+
+type message struct {
+	Text string `json:"text"`
+	IconURL string `json:"icon_url,omitempty"`
+	Username string `json:"username,omitempty"`
+	Channel string `json:"channel,omitempty"`
+}
 
 type Slack struct {
 	client *http.Client
@@ -23,23 +30,22 @@ func NewSlack(client *http.Client, webhookURL, message, avatar, username string)
 }
 
 func (s *Slack) SendPullRequestEvent(URL, title, author string) error {
-	var template = "{'text': '%s <%s|%s> by %s', 'icon_url': '%s', 'username': '%s'}"
+	var m = message{
+		Text: fmt.Sprintf("%s <%s|%s> by %s", s.message, URL, title, author),
+		IconURL: s.avatar,
+		Username: s.username,
+	}
 
-	var message = fmt.Sprintf(
-		template,
-		s.message,
-		html.EscapeString(URL),
-		html.EscapeString(title),
-		html.EscapeString(author),
-		s.avatar,
-		s.username,
-	)
+	asJSON, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
 
-	return s.sendMessage(message)
+	return s.sendMessage(asJSON)
 }
 
-func (s *Slack) sendMessage(message string) error {
-	req, err := http.NewRequest(http.MethodPost, s.webhookURL, bytes.NewBuffer([]byte(message)))
+func (s *Slack) sendMessage(message []byte) error {
+	req, err := http.NewRequest(http.MethodPost, s.webhookURL, bytes.NewBuffer(message))
 	if err != nil {
 		return err
 	}
@@ -50,6 +56,7 @@ func (s *Slack) sendMessage(message string) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("response codeStatus code: %d, expected 200", resp.StatusCode)
