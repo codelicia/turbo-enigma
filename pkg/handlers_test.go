@@ -1,22 +1,29 @@
 package pkg_test
 
 import (
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
+	"turboenigma/models"
 	"turboenigma/pkg"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type SpyMessage struct {
 	SendPullRequestEventFunc func(URL, title, author string) error
+	NotifyMergeRequestCreatedFunc func(mergeRequest models.MergeRequestInfo) error
 }
 
 func (s *SpyMessage) SendPullRequestEvent(URL, title, author string) error {
 	return s.SendPullRequestEventFunc(URL, title, author)
+}
+
+func (s *SpyMessage) NotifyMergeRequestCreated(mergeRequest models.MergeRequestInfo) error {
+	return s.NotifyMergeRequestCreatedFunc(mergeRequest)
 }
 
 func TestPostOnSlack(t *testing.T) {
@@ -44,6 +51,9 @@ func TestPostOnSlack(t *testing.T) {
 
 			return
 		},
+		NotifyMergeRequestCreatedFunc: func(mergeRequest models.MergeRequestInfo) (err error) {
+			return
+		},
 	}
 	pkg.PostOnSlack(rec, req)
 
@@ -68,6 +78,9 @@ func TestPostOnSlackWithEmptyBody(t *testing.T) {
 		SendPullRequestEventFunc: func(URL, title, author string) (err error) {
 			assert.FailNow(t, "Code should not reach this method")
 
+			return
+		},
+		NotifyMergeRequestCreatedFunc: func(mergeRequest models.MergeRequestInfo) (err error) {
 			return
 		},
 	}
@@ -100,6 +113,9 @@ func TestPostOnSlackWithIgnoredLabel(t *testing.T) {
 
 			return
 		},
+		NotifyMergeRequestCreatedFunc: func(mergeRequest models.MergeRequestInfo) (err error) {
+			return
+		},
 	}
 	pkg.PostOnSlack(rec, req)
 
@@ -129,6 +145,9 @@ func TestPostOnSlackWithNewIssue(t *testing.T) {
 
 			return
 		},
+		NotifyMergeRequestCreatedFunc: func(mergeRequest models.MergeRequestInfo) (err error) {
+			return
+		},
 	}
 	pkg.PostOnSlack(rec, req)
 
@@ -156,6 +175,9 @@ func TestPostOnSlackWithMergeRequestApproved(t *testing.T) {
 		SendPullRequestEventFunc: func(URL, title, author string) (err error) {
 			assert.FailNow(t, "Code should not reach this method")
 
+			return
+		},
+		NotifyMergeRequestCreatedFunc: func(mergeRequest models.MergeRequestInfo) (err error) {
 			return
 		},
 	}
