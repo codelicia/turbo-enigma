@@ -10,7 +10,7 @@ import (
 )
 
 var(
-	Message message.Provider
+	Provider message.Provider
 )
 
 func HealthCheckOn(writer http.ResponseWriter, request *http.Request) {
@@ -39,21 +39,7 @@ func PostOnSlack(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		// Filtering by label
-		var matchLabel = false
-		for _, s := range mr.Labels {
-			if s.Title == EnvManager.Get("MERGE_REQUEST_LABEL") {
-				matchLabel = true
-				break
-			}
-		}
-
-		if !matchLabel {
-			fmt.Fprint(writer, "We didn't find the right label")
-			return
-		}
-
-		err = Message.SendPullRequestEvent(mr.ObjectAttributes.URL, mr.ObjectAttributes.Title, mr.User.Name)
+		err = Provider.NotifyMergeRequestCreated(mr)
 		if err != nil {
 			return err
 		}

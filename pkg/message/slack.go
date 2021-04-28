@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"turboenigma/models"
 )
 
 type message struct {
@@ -16,19 +17,22 @@ type message struct {
 
 type Slack struct {
 	client *http.Client
+	notifications []models.NotificationConfig
 	webhookURL, message, avatar, username string
 }
 
-func NewSlack(client *http.Client, webhookURL, message, avatar, username string) *Slack {
+func NewSlack(client *http.Client, notifications []models.NotificationConfig, webhookURL, message, avatar, username string) *Slack {
 	return &Slack{
-		client:     client,
-		webhookURL: webhookURL,
-		message:    message,
-		avatar:     avatar,
-		username:   username,
+		client:        client,
+		notifications: notifications,
+		webhookURL:    webhookURL,
+		message:       message,
+		avatar:        avatar,
+		username:      username,
 	}
 }
 
+// Deprecated
 func (s *Slack) SendPullRequestEvent(URL, title, author string) error {
 	var m = message{
 		Text: fmt.Sprintf("%s <%s|%s> by %s", s.message, URL, title, author),
@@ -42,6 +46,40 @@ func (s *Slack) SendPullRequestEvent(URL, title, author string) error {
 	}
 
 	return s.sendMessage(asJSON)
+}
+
+func (s *Slack) NotifyMergeRequestCreated(mergeRequest models.MergeRequestInfo) error {
+	for _, channel := range s.ChannelsForMergeRequest(mergeRequest) {
+		var m = message{
+			Text: fmt.Sprintf("%s <%s|%s> by %s", s.message, mergeRequest.ObjectAttributes.URL, mergeRequest.ObjectAttributes.Title, mergeRequest.User.Name),
+			IconURL: s.avatar,
+			Username: s.username,
+			Channel: channel,
+		}
+
+		asJSON, err := json.Marshal(m)
+		if err != nil {
+			return err
+		}
+
+		return s.sendMessage(asJSON)
+	}
+
+	return nil
+}
+
+func (s *Slack) ChannelsForMergeRequest(mergeRequest models.MergeRequestInfo) []string {
+	channels := []string{};
+
+	for _, config := range s.notifications {
+		for _, mrLabel := range mergeRequest.Labels {
+			if (mrLabel.Title == config.Labels[0]) {
+				channels = append(channels, config.Channel)
+			}
+		}
+	}
+
+	return channels
 }
 
 func (s *Slack) sendMessage(message []byte) error {
