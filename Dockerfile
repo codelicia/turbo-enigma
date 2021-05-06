@@ -11,6 +11,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o bin/turbo-enigma
 FROM scratch
 
 COPY --from=builder /turbo-enigma/bin/. /.
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 ENV HTTP_PORT=80
 ENV MERGE_REQUEST_LABEL="just-testing"
