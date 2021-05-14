@@ -1,26 +1,26 @@
-package message
+package provider
 
 import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"testing"
-	"turboenigma/models"
+	"turboenigma/model"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestChannelsForMergeRequest(t *testing.T) {
-	var merge_request models.MergeRequestInfo
+	var mergeRequest model.MergeRequestInfo
 	var jsonString string
-	var notifications []models.NotificationConfig
+	var notifications []model.NotificationRule
 
 	payload, err := ioutil.ReadFile("../payload/merge_request-open.json")
 	assert.Empty(t, err)
 
-	err = json.Unmarshal(payload, &merge_request)
+	err = json.Unmarshal(payload, &mergeRequest)
 	assert.Empty(t, err)
-	assert.Equal(t, "just-testing", merge_request.Labels[0].Title)
+	assert.Equal(t, "just-testing", mergeRequest.Labels[0].Title)
 
 	jsonString = "[{\"channel\":\"#tested\",\"labels\":[\"just-testing\"]}]"
 	err = json.Unmarshal([]byte(jsonString), &notifications)
@@ -35,20 +35,20 @@ func TestChannelsForMergeRequest(t *testing.T) {
 		"Username",
 	)
 
-	assert.Equal(t, []string{"#tested"}, slack.ChannelsForMergeRequest(merge_request))
+	assert.Equal(t, []string{"#tested"}, slack.ChannelsForMergeRequest(mergeRequest))
 }
 
 func TestChannelsForMergeRequestNotMatchingLabel(t *testing.T) {
-	var merge_request models.MergeRequestInfo
+	var mergeRequest model.MergeRequestInfo
 	var jsonString string
-	var notifications []models.NotificationConfig
+	var notifications []model.NotificationRule
 
 	payload, err := ioutil.ReadFile("../payload/merge_request-open.json")
 	assert.Empty(t, err)
 
-	err = json.Unmarshal(payload, &merge_request)
+	err = json.Unmarshal(payload, &mergeRequest)
 	assert.Empty(t, err)
-	assert.Equal(t, "just-testing", merge_request.Labels[0].Title)
+	assert.Equal(t, "just-testing", mergeRequest.Labels[0].Title)
 
 	jsonString = "[{\"channel\":\"#tested\",\"labels\":[\"something-else\"]}]"
 	err = json.Unmarshal([]byte(jsonString), &notifications)
@@ -63,5 +63,5 @@ func TestChannelsForMergeRequestNotMatchingLabel(t *testing.T) {
 		"Username",
 	)
 
-	assert.Equal(t, []string{}, slack.ChannelsForMergeRequest(merge_request))
+	assert.Equal(t, []string{}, slack.ChannelsForMergeRequest(mergeRequest))
 }

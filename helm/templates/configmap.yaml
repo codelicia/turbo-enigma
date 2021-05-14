@@ -4,8 +4,8 @@ metadata:
   name: {{ .Release.Name }}
 data:
   HTTP_PORT: "80"
-  MERGE_REQUEST_LABEL: {{ .Values.gitlab.mergeRequestLabel }}
-  MESSAGE: {{ .Values.slack.message }}
-  SLACK_AVATAR_URL: {{ .Values.slack.avatarUrl }}
-  SLACK_USERNAME: {{ .Values.slack.username }}
-  SLACK_WEBHOOK_URL: {{ .Values.slack.webhookUrl }}
+  NOTIFICATION_RULES: {{ mustToJson .Values.notificationRules | quote }}
+  MESSAGE: {{ .Values.slack.message | quote }}
+  SLACK_AVATAR_URL: {{ .Values.slack.avatarUrl | quote }}
+  SLACK_USERNAME: {{ .Values.slack.username | quote }}
+  SLACK_WEBHOOK_URL: {{ .Values.slack.webhookUrl | quote }}

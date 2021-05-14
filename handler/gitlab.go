@@ -1,23 +1,23 @@
-package pkg
+package handler
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"turboenigma/models"
-	"turboenigma/pkg/message"
+	"turboenigma/model"
+	"turboenigma/provider"
 )
 
-var(
-	Provider message.Provider
-)
-
-func HealthCheckOn(writer http.ResponseWriter, request *http.Request) {
-	fmt.Fprint(writer, "It is alive!")
+type Gitlab struct {
+	provider provider.Provider
 }
 
-func PostOnSlack(writer http.ResponseWriter, request *http.Request) {
+func NewGitlab(provider provider.Provider) *Gitlab {
+	return &Gitlab{ provider: provider }
+}
+
+func (g *Gitlab) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	err := func() (err error) {
 		body, err := ioutil.ReadAll(request.Body)
 		if err != nil {
@@ -39,7 +39,7 @@ func PostOnSlack(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		err = Provider.NotifyMergeRequestCreated(mr)
+		err = g.provider.NotifyMergeRequestCreated(mr)
 		if err != nil {
 			return err
 		}
@@ -54,7 +54,7 @@ func PostOnSlack(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func jsonDecode(jsonString string) (mergeRequest models.MergeRequestInfo, err error) {
+func jsonDecode(jsonString string) (mergeRequest model.MergeRequestInfo, err error) {
 	err = json.Unmarshal([]byte(jsonString), &mergeRequest)
 
 	return

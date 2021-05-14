@@ -1,6 +1,6 @@
-package models
+package model
 
-type NotificationConfig struct {
+type NotificationRule struct {
 	Channel string `json:"channel"`
 	Labels  []string `json:"labels"`
 }

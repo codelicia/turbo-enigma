@@ -1,11 +1,11 @@
-package message
+package provider
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"turboenigma/models"
+	"turboenigma/model"
 )
 
 type message struct {
@@ -17,22 +17,22 @@ type message struct {
 
 type Slack struct {
 	client *http.Client
-	notifications []models.NotificationConfig
+	notificationRules []model.NotificationRule
 	webhookURL, message, avatar, username string
 }
 
-func NewSlack(client *http.Client, notifications []models.NotificationConfig, webhookURL, message, avatar, username string) *Slack {
+func NewSlack(client *http.Client, notificationRules []model.NotificationRule, webhookURL, message, avatar, username string) *Slack {
 	return &Slack{
-		client:        client,
-		notifications: notifications,
-		webhookURL:    webhookURL,
-		message:       message,
-		avatar:        avatar,
-		username:      username,
+		client:            client,
+		notificationRules: notificationRules,
+		webhookURL:        webhookURL,
+		message:           message,
+		avatar:            avatar,
+		username:          username,
 	}
 }
 
-// Deprecated
+// Deprecated: please use NotifyMergeRequestCreated instead
 func (s *Slack) SendPullRequestEvent(URL, title, author string) error {
 	var m = message{
 		Text: fmt.Sprintf("%s <%s|%s> by %s", s.message, URL, title, author),
@@ -48,8 +48,10 @@ func (s *Slack) SendPullRequestEvent(URL, title, author string) error {
 	return s.sendMessage(asJSON)
 }
 
-func (s *Slack) NotifyMergeRequestCreated(mergeRequest models.MergeRequestInfo) error {
-	for _, channel := range s.ChannelsForMergeRequest(mergeRequest) {
+func (s *Slack) NotifyMergeRequestCreated(mergeRequest model.MergeRequestInfo) error {
+	channels := s.ChannelsForMergeRequest(mergeRequest)
+
+	for _, channel := range channels {
 		var m = message{
 			Text: fmt.Sprintf("%s <%s|%s> by %s", s.message, mergeRequest.ObjectAttributes.URL, mergeRequest.ObjectAttributes.Title, mergeRequest.User.Name),
 			IconURL: s.avatar,
@@ -62,16 +64,19 @@ func (s *Slack) NotifyMergeRequestCreated(mergeRequest models.MergeRequestInfo) 
 			return err
 		}
 
-		return s.sendMessage(asJSON)
+		err = s.sendMessage(asJSON)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (s *Slack) ChannelsForMergeRequest(mergeRequest models.MergeRequestInfo) []string {
+func (s *Slack) ChannelsForMergeRequest(mergeRequest model.MergeRequestInfo) []string {
 	channels := []string{};
 
-	for _, config := range s.notifications {
+	for _, config := range s.notificationRules {
 		for _, mrLabel := range mergeRequest.Labels {
 			if (mrLabel.Title == config.Labels[0]) {
 				channels = append(channels, config.Channel)

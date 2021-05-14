@@ -9,5 +9,10 @@ slack:
   username: "codelicia/turbo-enigma"
   webhookUrl: http://slack-webhook.localhost
 
-gitlab:
-  mergeRequestLabel: "Enabling Team"
+notificationRules:
+  - channel: "#enabling-team"
+    labels: ["Enabling Team", "Local Environment"]
+  - channel: "#open-source"
+    labels: ["Codelicia"]
+  - channel: "#turbo-enigma"
+    labels: ["just-testing"]
