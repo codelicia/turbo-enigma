@@ -12,7 +12,16 @@ Deploying
 ---------
 
 ```
-helm upgrade --install my-enigma helm --set slack.webhookUrl=$SLACK_WEBHOOK_URL --set gitlab.mergeRequestLabel=codelicia-team
+cp helm/values.yaml.dist helm/values.yaml
+helm upgrade --install my-enigma helm --set slack.webhookUrl=$SLACK_WEBHOOK_URL
+```
+
+Redeploying
+---------
+
+```
+vim helm/values.yaml # Adding new notification rules for instance
+helm upgrade --install my-enigma helm --set slack.webhookUrl=$SLACK_WEBHOOK_URL
 ```
 
 Build
@@ -28,14 +37,14 @@ Run
 ```
 docker run -it --rm -p 8000:80 \
     -e SLACK_WEBHOOK_URL=$SLACK_WEBHOOK_URL \
-    -e MERGE_REQUEST_LABEL="codelicia-team" turbo-enigma
+    -e NOTIFICATION_RULES='[{"channel":"#codelicia-team", "labels": ["Codelicia"]}]' turbo-enigma
 ```
 
 Testing
 -------
 
 ```
-curl localhost:8000 -d @pkg/payload/merge_request-open.json
+curl localhost:8000 -d @payload/merge_request-open.json
 ```
 
 Unit tests

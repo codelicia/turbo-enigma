@@ -4,50 +4,53 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"turboenigma/models"
-	"turboenigma/pkg"
-	"turboenigma/pkg/message"
+	"turboenigma/handler"
+	"turboenigma/model"
+	"turboenigma/provider"
 )
 
-func main() {
-	envManager, err := pkg.NewEnv([]string{
+func InitEnvironment() *Env {
+	env, err := NewEnv([]string{
 		"HTTP_PORT",
-		"SLACK_WEBHOOK_URL",
 		"MESSAGE",
-		"NOTIFICATION_CONFIG",
-		"SLACK_USERNAME",
+		"NOTIFICATION_RULES",
 		"SLACK_AVATAR_URL",
+		"SLACK_USERNAME",
+		"SLACK_WEBHOOK_URL",
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	if (pkg.EnvManager.Get("MERGE_REQUEST_LABEL") != "") {
-		fmt.Println("'MERGE_REQUEST_LABEL' is deprecated and will be removed soon.")
-		fmt.Println("Please use 'NOTIFICATION_CONFIG' instead.")
+	return env
+}
+
+
+func main() {
+	EnvManager = InitEnvironment()
+
+	var notificationRules []model.NotificationRule
+	err := json.Unmarshal([]byte(EnvManager.Get("NOTIFICATION_RULES")), &notificationRules)
+	if err != nil {
+		panic(err)
 	}
 
-	var notifications []models.NotificationConfig
-	err = json.Unmarshal([]byte(pkg.EnvManager.Get("NOTIFICATION_CONFIG")), &notifications)
-
-	pkg.EnvManager = envManager
-	pkg.Provider = message.NewSlack(
+	slack := provider.NewSlack(
 		http.DefaultClient,
-		notifications,
-		pkg.EnvManager.Get("SLACK_WEBHOOK_URL"),
-		pkg.EnvManager.Get("MESSAGE"),
-		pkg.EnvManager.Get("SLACK_AVATAR_URL"),
-		pkg.EnvManager.Get("SLACK_USERNAME"),
+		notificationRules,
+		EnvManager.Get("SLACK_WEBHOOK_URL"),
+		EnvManager.Get("MESSAGE"),
+		EnvManager.Get("SLACK_AVATAR_URL"),
+		EnvManager.Get("SLACK_USERNAME"),
 	)
 
-	var server = fmt.Sprintf("0.0.0.0:%s", pkg.EnvManager.Get("HTTP_PORT"))
+	http.HandleFunc("/", handler.NewGitlab(slack).ServeHTTP)
+	http.HandleFunc("/healthcheck", handler.NewHealthCheck().ServeHTTP)
 
-	fmt.Println("Server listening on", server)
+	address := fmt.Sprintf("0.0.0.0:%s", EnvManager.Get("HTTP_PORT"))
+	fmt.Println("Server listening on", address)
 
-	http.HandleFunc("/", pkg.PostOnSlack)
-	http.HandleFunc("/healthcheck", pkg.HealthCheckOn)
-
-	if err := http.ListenAndServe(server, nil); err != nil {
+	if err := http.ListenAndServe(address, nil); err != nil {
 		panic(err)
 	}
 }
