@@ -9,6 +9,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions/setup-go@v2
         with:
           go-version: '^1.16'
@@ -18,11 +19,6 @@ jobs:
 
       - name: Go tests
         run: go test -race -v ./... -coverprofile=coverage.out -covermode=atomic
-
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: latest
 
       - uses: codecov/codecov-action@v1
         with:
