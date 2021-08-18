@@ -9,15 +9,15 @@ import (
 )
 
 type message struct {
-	Text string `json:"text"`
-	IconURL string `json:"icon_url,omitempty"`
+	Text     string `json:"text"`
+	IconURL  string `json:"icon_url,omitempty"`
 	Username string `json:"username,omitempty"`
-	Channel string `json:"channel,omitempty"`
+	Channel  string `json:"channel,omitempty"`
 }
 
 type Slack struct {
-	client *http.Client
-	notificationRules []model.NotificationRule
+	client                                *http.Client
+	notificationRules                     []model.NotificationRule
 	webhookURL, message, avatar, username string
 }
 
@@ -32,31 +32,15 @@ func NewSlack(client *http.Client, notificationRules []model.NotificationRule, w
 	}
 }
 
-// Deprecated: please use NotifyMergeRequestCreated instead
-func (s *Slack) SendPullRequestEvent(URL, title, author string) error {
-	var m = message{
-		Text: fmt.Sprintf("%s <%s|%s> by %s", s.message, URL, title, author),
-		IconURL: s.avatar,
-		Username: s.username,
-	}
-
-	asJSON, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-
-	return s.sendMessage(asJSON)
-}
-
 func (s *Slack) NotifyMergeRequestCreated(mergeRequest model.MergeRequestInfo) error {
 	channels := s.ChannelsForMergeRequest(mergeRequest)
 
 	for _, channel := range channels {
 		var m = message{
-			Text: fmt.Sprintf("%s <%s|%s> by %s", s.message, mergeRequest.ObjectAttributes.URL, mergeRequest.ObjectAttributes.Title, mergeRequest.User.Name),
-			IconURL: s.avatar,
+			Text:     fmt.Sprintf("%s <%s|%s> by %s", s.message, mergeRequest.ObjectAttributes.URL, mergeRequest.ObjectAttributes.Title, mergeRequest.User.Name),
+			IconURL:  s.avatar,
 			Username: s.username,
-			Channel: channel,
+			Channel:  channel,
 		}
 
 		asJSON, err := json.Marshal(m)
@@ -74,11 +58,11 @@ func (s *Slack) NotifyMergeRequestCreated(mergeRequest model.MergeRequestInfo) e
 }
 
 func (s *Slack) ChannelsForMergeRequest(mergeRequest model.MergeRequestInfo) []string {
-	channels := []string{};
+	channels := []string{}
 
 	for _, config := range s.notificationRules {
 		for _, mrLabel := range mergeRequest.Labels {
-			if (mrLabel.Title == config.Labels[0]) {
+			if mrLabel.Title == config.Labels[0] {
 				channels = append(channels, config.Channel)
 			}
 		}
@@ -107,4 +91,3 @@ func (s *Slack) sendMessage(message []byte) error {
 
 	return nil
 }
-
