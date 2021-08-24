@@ -44,7 +44,7 @@ Testing
 -------
 
 ```
-curl localhost:8000 -d @payload/merge_request-open.json
+curl localhost:8000 -d @payload/merge_request-open-just-testing.json
 ```
 
 Unit tests

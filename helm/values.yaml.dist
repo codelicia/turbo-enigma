@@ -11,7 +11,7 @@ slack:
 
 notificationRules:
   - channel: "#enabling-team"
-    labels: ["Enabling Team", "Local Environment"]
+    labels: ["Enabling Team"]
   - channel: "#open-source"
     labels: ["Codelicia"]
   - channel: "#turbo-enigma"

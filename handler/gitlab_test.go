@@ -21,7 +21,7 @@ func (s *SpyProvider) NotifyMergeRequestCreated(mergeRequest model.MergeRequestI
 }
 
 func TestPostOnSlack(t *testing.T) {
-	dat, err := ioutil.ReadFile("../payload/merge_request-open.json")
+	dat, err := ioutil.ReadFile("../payload/merge_request-open-just-testing.json")
 	assert.Empty(t, err)
 
 	recorder := httptest.NewRecorder()
@@ -36,6 +36,7 @@ func TestPostOnSlack(t *testing.T) {
 			assert.Equal(t, "https://gitlab.com/alexandre.eher/turbo-enigma/-/merge_requests/1", mergeRequest.ObjectAttributes.URL)
 			assert.Equal(t, "Add LICENSE", mergeRequest.ObjectAttributes.Title)
 			assert.Equal(t, "Alexandre Eher", mergeRequest.User.Name)
+
 			return
 		},
 	}
