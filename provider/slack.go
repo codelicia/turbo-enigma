@@ -62,8 +62,10 @@ func (s *Slack) ChannelsForMergeRequest(mergeRequest model.MergeRequestInfo) []s
 
 	for _, config := range s.notificationRules {
 		for _, mrLabel := range mergeRequest.Labels {
-			if mrLabel.Title == config.Labels[0] {
-				channels = append(channels, config.Channel)
+			for _, ruleLabel := range config.Labels {
+				if mrLabel.Title == ruleLabel {
+					channels = append(channels, config.Channel)
+				}
 			}
 		}
 	}
