@@ -16,6 +16,11 @@ jobs:
 
       - name: Go Version
         run: go version
+      
+      - name: Run Revive Action by pulling pre-built image
+        uses: docker://morphy/revive-action:v2
+        with:
+          config: revive.toml
 
       - name: Go tests
         run: go test -race -v ./... -coverprofile=coverage.out -covermode=atomic
