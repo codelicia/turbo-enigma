@@ -16,3 +16,15 @@ notificationRules:
     labels: ["Codelicia"]
   - channel: "#turbo-enigma"
     labels: ["just-testing"]
+
+service:
+  nodePort: 30000 # used when ingress is disabled
+
+ingress:
+  enabled: true
+  path: /turbo-enigma
+  host: ~
+  tls:
+    enabled: false
+    secretName: todo
+  annotations: ~
