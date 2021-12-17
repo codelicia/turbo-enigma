@@ -1,12 +1,10 @@
+# syntax=docker/dockerfile:1.2
 FROM golang:1.16-alpine AS builder
-RUN mkdir -p /turbo-enigma
 WORKDIR /turbo-enigma
 
-COPY go.* ./
-RUN go mod download
-
 COPY . ./
-RUN CGO_ENABLED=0 GOOS=linux go build -o bin/turbo-enigma
+RUN go mod download \
+    && CGO_ENABLED=0 GOOS=linux go build -o bin/turbo-enigma
 
 FROM scratch
 

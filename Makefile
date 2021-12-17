@@ -1,10 +1,15 @@
 .PHONY: *
 
+.DEFAULT_GOAL := setup
+
 .SILENT:
 
 include $(shell test -f .env.local || cp .env.local.dist .env.local && echo .env.local)
 
+export DOCKER_BUILDKIT=1
 export TURBO_ENIGMA_IMAGE ?= codelicia/turbo-enigma:latest
+
+setup: image/build test/unit analysis/revive app/run
 
 image/build:
 	docker build -t ${TURBO_ENIGMA_IMAGE} .
@@ -26,5 +31,9 @@ coverage/generate:
 coverage/view:
 	go tool cover -html=coverage.out
 
-echoes:
-	env
+analysis/revive:
+	docker run --rm -it \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v  "${PWD}":"${PWD}" \
+		-w "${PWD}" \
+		morphy/revive-action

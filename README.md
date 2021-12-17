@@ -4,6 +4,8 @@ Turbo Enigma ⚡️🔋
 Environment
 -----------
 
+The application will need the Slack webhook URL. you can place it in the `.env.local`. 
+if the file does not exist, you can duplicate it from `.env.local.dist`, otherwise it will get created the first time you run `make` 
 ```
 export SLACK_WEBHOOK_URL="https://find-me-on.slack.com"
 ```
