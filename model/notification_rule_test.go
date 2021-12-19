@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 func TestNotificationConfig(t *testing.T) {
 	t.Run("Single Notification Config can be parsed", func(t *testing.T) {
 		var jsonString string = "[{\"channel\":\"#abc\",\"labels\":[\"test-a\",\"test-b\"]}]"

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"testing"
 	"os"
+	"testing"
 )
 
 func setupTestEnvironmentVariables() {
@@ -36,7 +36,6 @@ func TestEnvironmentMissingMessage(t *testing.T) {
 	t.Error("should panic about missing env: MESSAGE")
 }
 
-
 func TestEnvironmentMissingNotificationRules(t *testing.T) {
 	defer func() { recover() }()
 
@@ -47,7 +46,6 @@ func TestEnvironmentMissingNotificationRules(t *testing.T) {
 
 	t.Error("should panic about missing env: NOTIFICATION_RULES")
 }
-
 
 func TestEnvironmentMissingSlackAvatarUrl(t *testing.T) {
 	defer func() { recover() }()
@@ -60,7 +58,6 @@ func TestEnvironmentMissingSlackAvatarUrl(t *testing.T) {
 	t.Error("should panic about missing env: SLACK_AVATAR_URL")
 }
 
-
 func TestEnvironmentMissingSlackUsername(t *testing.T) {
 	defer func() { recover() }()
 
@@ -71,7 +68,6 @@ func TestEnvironmentMissingSlackUsername(t *testing.T) {
 
 	t.Error("should panic about missing env: SLACK_USERNAME")
 }
-
 
 func TestEnvironmentMissingSlackWebhookUrl(t *testing.T) {
 	defer func() { recover() }()

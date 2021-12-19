@@ -14,7 +14,7 @@ type Gitlab struct {
 }
 
 func NewGitlab(provider provider.Provider) *Gitlab {
-	return &Gitlab{ provider: provider }
+	return &Gitlab{provider: provider}
 }
 
 func (g *Gitlab) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
