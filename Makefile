@@ -35,8 +35,5 @@ coverage/view:
 	go tool cover -html=coverage.out
 
 analysis/revive:
-	docker run --rm -it \
-		-v /var/run/docker.sock:/var/run/docker.sock \
-		-v  "${PWD}":"${PWD}" \
-		-w "${PWD}" \
-		morphy/revive-action
+	revive -version || go get -u github.com/mgechev/revive
+	revive -config=revive.toml -formatter=friendly ./...
