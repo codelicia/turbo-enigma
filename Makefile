@@ -6,6 +6,9 @@
 
 include $(shell test -f .env.local || cp .env.local.dist .env.local && echo .env.local)
 
+export GOROOT ?= $(error "GOROOT is not defined, you may not have Go installed locally.")
+export GOPATH ?= $(error "GOPATH is not defined, you may not have Go installed locally.")
+
 export DOCKER_BUILDKIT=1
 export TURBO_ENIGMA_IMAGE ?= codelicia/turbo-enigma:latest
 
