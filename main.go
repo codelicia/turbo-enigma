@@ -25,7 +25,6 @@ func InitEnvironment() *Env {
 	return env
 }
 
-
 func main() {
 	EnvManager = InitEnvironment()
 

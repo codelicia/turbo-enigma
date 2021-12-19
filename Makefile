@@ -22,6 +22,9 @@ app/run:
 
 app/rerun: image/build app/run
 
+style/fix:
+	go fmt ./...
+
 test/unit:
 	go test ./...
 
