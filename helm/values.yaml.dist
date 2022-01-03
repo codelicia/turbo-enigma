@@ -1,7 +1,9 @@
 image:
-  repository: codelicia/turbo-enigma
+  repository: ghcr.io/codelicia/turbo-enigma
   pullPolicy: Always
-  tag: latest
+  tag: 0.1.0   # use a release tag (https://github.com/codelicia/turbo-enigma/tags)
+# tag: main    # latest changes from git branch
+# tag: "pr:33" # use the pull request number 33
 
 slack:
   avatarUrl: "https://avatars.githubusercontent.com/u/46966179?s=200&v=4"
