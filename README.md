@@ -14,16 +14,16 @@ Deploying
 ---------
 
 ```
-cp helm/values.yaml.dist helm/values.yaml
-helm upgrade --install my-enigma helm --set slack.webhookUrl=$SLACK_WEBHOOK_URL
+cp charts/turbo-enigma/values.yaml.dist charts/turbo-enigma/values.yaml
+helm upgrade --install my-enigma charts/turbo-enigma --set slack.webhookUrl=$SLACK_WEBHOOK_URL
 ```
 
 Redeploying
 ---------
 
 ```
-vim helm/values.yaml # Adding new notification rules for instance
-helm upgrade --install my-enigma helm --set slack.webhookUrl=$SLACK_WEBHOOK_URL
+vim charts/turbo-enigma/values.yaml # Adding new notification rules for instance
+helm upgrade --install my-enigma charts/turbo-enigma --set slack.webhookUrl=$SLACK_WEBHOOK_URL
 ```
 
 Build
