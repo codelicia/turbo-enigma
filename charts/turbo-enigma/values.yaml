@@ -1,0 +1,29 @@
+image:
+  repository: ghcr.io/codelicia/turbo-enigma
+  pullPolicy: Always
+  tag: main
+
+slack:
+  avatarUrl: "https://avatars.githubusercontent.com/u/46966179?s=200&v=4"
+  message: "New Merge Request Created"
+  username: "codelicia/turbo-enigma"
+  webhookUrl: http://slack-webhook.localhost
+
+notificationRules:
+  - channel: "#enabling-team"
+    labels: ["Enabling Team"]
+  - channel: "#open-source"
+    labels: ["Codelicia"]
+  - channel: "#turbo-enigma"
+    labels: ["just-testing"]
+
+service:
+  nodePort: 30000
+
+ingress:
+  enabled: true
+  path: /
+  host: enigma.localhost
+  tls:
+    enabled: false
+    secretName: todo
