@@ -5,7 +5,7 @@ on:
     - cron: '35 7 * * *'
   push:
     branches: [ main ]
-    tags: [ 'turbo-enigma-*.*.*' ]
+    tags: [ '*.*.*' ]
   pull_request:
     branches: [ main ]
 
