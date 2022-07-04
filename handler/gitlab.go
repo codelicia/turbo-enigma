@@ -33,9 +33,25 @@ func (g *Gitlab) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 			return err
 		}
 
+		if mr.EventType != "merge_request" {
+			fmt.Fprint(writer, "We just care about merge_request events")
+			return
+		}
+
+		if mr.ObjectAttributes.Action == "approved" {
+			err = g.provider.NotifyMergeRequestApproved(mr)
+			if err != nil {
+				return err
+			}
+
+			fmt.Fprint(writer, "MR Approved OK....")
+
+			return
+		}
+
 		// Filter events by "MergeRequest" opened
-		if mr.EventType != "merge_request" || mr.ObjectAttributes.Action != "open" {
-			fmt.Fprint(writer, "We just care about new merge_requests")
+		if mr.ObjectAttributes.Action != "open" {
+			fmt.Fprint(writer, "We can handle only open & approved events")
 			return
 		}
 
