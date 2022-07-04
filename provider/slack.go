@@ -4,7 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"net/url"
+	"strings"
 	"turboenigma/model"
 )
 
@@ -13,6 +16,10 @@ type message struct {
 	IconURL  string `json:"icon_url,omitempty"`
 	Username string `json:"username,omitempty"`
 	Channel  string `json:"channel,omitempty"`
+}
+
+type search struct {
+	Query string `json:"query"`
 }
 
 type Slack struct {
@@ -30,6 +37,17 @@ func NewSlack(client *http.Client, notificationRules []model.NotificationRule, w
 		avatar:            avatar,
 		username:          username,
 	}
+}
+
+func (s *Slack) NotifyMergeRequestApproved(mergeRequest model.MergeRequestInfo) error {
+	// channels := s.ChannelsForMergeRequest(mergeRequest)
+
+	// Search for previous message
+	var search_terms = fmt.Sprintf("%s <%s|%s> by %s", s.message, mergeRequest.ObjectAttributes.URL, mergeRequest.ObjectAttributes.Title, mergeRequest.User.Name)
+
+	s.search(search_terms)
+
+	return nil
 }
 
 func (s *Slack) NotifyMergeRequestCreated(mergeRequest model.MergeRequestInfo) error {
@@ -92,4 +110,78 @@ func (s *Slack) sendMessage(message []byte) error {
 	}
 
 	return nil
+}
+
+func (s *Slack) search(search_terms string) string {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://slack.com/api/search.messages?query=%s", strings.ReplaceAll(search_terms, " ", "%20")), bytes.NewBufferString(""))
+	if err != nil {
+		return "a"
+	}
+
+	// TODO: make sure we have the correct token
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Authorization", "Bearer xoxp-1105972459328-1082432263299-3758422812340-fa45e6a9bcadae3994758ad86403f4f4")
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return "b"
+	}
+	defer resp.Body.Close()
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "x"
+	}
+
+	// fmt.Println(string(b))
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Sprintln(resp.StatusCode)
+	}
+
+	search_results, err := jsonDecodeMessage(string(b))
+
+	// TODO: filter per channel and get the latest message only
+	var ts = search_results.Messages.Matches[0].Ts
+	var channelId = search_results.Messages.Matches[0].Channel.ID
+
+	fmt.Println(ts)
+	fmt.Println(channelId)
+	fmt.Println(search_results.Messages.Matches[0].Channel.Name)
+	fmt.Println(search_results.Messages.Matches[0].Permalink)
+
+	//---------------------------------------- Add reaction
+	data := url.Values{}
+	data.Set("channel", channelId)
+	data.Set("name", "thumbsup")
+	data.Set("timestamp", ts)
+
+	req1, err1 := http.NewRequest(http.MethodPost, "https://slack.com/api/reactions.add", strings.NewReader(data.Encode()))
+	if err1 != nil {
+		return "a"
+	}
+
+	// TODO: make sure we have the correct token
+	req1.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req1.Header.Set("Authorization", "Bearer xoxp-1105972459328-1082432263299-3758422812340-fa45e6a9bcadae3994758ad86403f4f4")
+
+	resp1, e := s.client.Do(req1)
+	if e != nil {
+		return "b"
+	}
+	defer resp1.Body.Close()
+
+	if resp1.StatusCode != http.StatusOK {
+		fmt.Printf("Reaction response codeStatus code: %d, expected 200", resp.StatusCode)
+		return fmt.Sprintf("Reaction response codeStatus code: %d, expected 200", resp.StatusCode)
+	}
+
+	fmt.Printf("Reaction posted")
+	return "end"
+}
+
+func jsonDecodeMessage(jsonString string) (message model.SearchResult, err error) {
+	err = json.Unmarshal([]byte(jsonString), &message)
+
+	return
 }
