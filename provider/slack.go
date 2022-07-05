@@ -47,10 +47,10 @@ func (s *Slack) ReactToMessage(mergeRequest model.MergeRequestInfo, reactionRule
 	// channels := s.ChannelsForMergeRequest(mergeRequest)
 
 	// Search for previous message
-	var search_terms = fmt.Sprintf("%s <%s|%s> by %s", s.message, mergeRequest.ObjectAttributes.URL, mergeRequest.ObjectAttributes.Title, mergeRequest.User.Name)
+	var searchTerms = fmt.Sprintf("%s <%s|%s> by %s", s.message, mergeRequest.ObjectAttributes.URL, mergeRequest.ObjectAttributes.Title, mergeRequest.User.Name)
 
 	// TODO: use reactionRule only when actually reacting
-	s.search(search_terms, reactionRule)
+	s.search(searchTerms, reactionRule)
 
 	return nil
 }
@@ -121,8 +121,8 @@ func (s *Slack) sendMessage(message []byte) error {
 	return nil
 }
 
-func (s *Slack) search(search_terms string, reactionRule model.ReactionRule) string {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://slack.com/api/search.messages?query=%s", strings.ReplaceAll(search_terms, " ", "%20")), bytes.NewBufferString(""))
+func (s *Slack) search(searchTerms string, reactionRule model.ReactionRule) string {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://slack.com/api/search.messages?query=%s", strings.ReplaceAll(searchTerms, " ", "%20")), bytes.NewBufferString(""))
 	if err != nil {
 		return "a"
 	}
@@ -148,20 +148,20 @@ func (s *Slack) search(search_terms string, reactionRule model.ReactionRule) str
 		return fmt.Sprintln(resp.StatusCode)
 	}
 
-	search_results, err := jsonDecodeMessage(string(b))
+	searchResults, err := jsonDecodeMessage(string(b))
 
 	// TODO: filter per channel and get the latest message only
-	var ts = search_results.Messages.Matches[0].Ts
-	var channelId = search_results.Messages.Matches[0].Channel.ID
+	var ts = searchResults.Messages.Matches[0].Ts
+	var channelID = searchResults.Messages.Matches[0].Channel.ID
 
 	fmt.Println(ts)
-	fmt.Println(channelId)
-	fmt.Println(search_results.Messages.Matches[0].Channel.Name)
-	fmt.Println(search_results.Messages.Matches[0].Permalink)
+	fmt.Println(channelID)
+	fmt.Println(searchResults.Messages.Matches[0].Channel.Name)
+	fmt.Println(searchResults.Messages.Matches[0].Permalink)
 
 	//---------------------------------------- Add reaction
 	data := url.Values{}
-	data.Set("channel", channelId)
+	data.Set("channel", channelID)
 	data.Set("name", reactionRule.Reaction)
 	data.Set("timestamp", ts)
 
