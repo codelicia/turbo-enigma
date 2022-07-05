@@ -14,9 +14,11 @@ func InitEnvironment() *Env {
 		"HTTP_PORT",
 		"MESSAGE",
 		"NOTIFICATION_RULES",
+		"REACTION_RULES",
 		"SLACK_AVATAR_URL",
 		"SLACK_USERNAME",
 		"SLACK_WEBHOOK_URL",
+		"SLACK_TOKEN",
 	})
 	if err != nil {
 		panic(err)
@@ -34,10 +36,18 @@ func main() {
 		panic(err)
 	}
 
+	var reactionRules []model.ReactionRule
+	e := json.Unmarshal([]byte(EnvManager.Get("REACTION_RULES")), &reactionRules)
+	if e != nil {
+		panic(err)
+	}
+
 	slack := provider.NewSlack(
 		http.DefaultClient,
 		notificationRules,
+		reactionRules,
 		EnvManager.Get("SLACK_WEBHOOK_URL"),
+		EnvManager.Get("SLACK_TOKEN"),
 		EnvManager.Get("MESSAGE"),
 		EnvManager.Get("SLACK_AVATAR_URL"),
 		EnvManager.Get("SLACK_USERNAME"),

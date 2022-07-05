@@ -5,7 +5,9 @@ metadata:
 data:
   HTTP_PORT: "80"
   NOTIFICATION_RULES: {{ mustToJson .Values.notificationRules | quote }}
+  REACTION_RULES: {{ mustToJson .Values.reactionRules | quote }}
   MESSAGE: {{ .Values.slack.message | quote }}
   SLACK_AVATAR_URL: {{ .Values.slack.avatarUrl | quote }}
   SLACK_USERNAME: {{ .Values.slack.username | quote }}
   SLACK_WEBHOOK_URL: {{ .Values.slack.webhookUrl | quote }}
+  SLACK_TOKEN: {{ .Values.slack.token | quote }}

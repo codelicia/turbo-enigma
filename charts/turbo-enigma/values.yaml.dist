@@ -19,13 +19,19 @@ notificationRules:
   - channel: "#turbo-enigma"
     labels: ["just-testing"]
 
+reactionRules:
+  - action: "approved"
+    reaction: "thumbsup"
+  - action: "merged"
+    reaction: "white_tick"
+
 service:
   nodePort: 30000 # used when ingress is disabled
 
 ingress:
   enabled: true
   path: /turbo-enigma
-  host: ~
+  host: localhost
   tls:
     enabled: false
     secretName: todo
