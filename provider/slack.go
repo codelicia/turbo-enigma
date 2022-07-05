@@ -23,31 +23,40 @@ type search struct {
 }
 
 type Slack struct {
-	client                                *http.Client
-	notificationRules                     []model.NotificationRule
-	webhookURL, message, avatar, username string
+	client                                       *http.Client
+	notificationRules                            []model.NotificationRule
+	reactionRules                                []model.ReactionRule
+	webhookURL, message, avatar, username, token string
 }
 
-func NewSlack(client *http.Client, notificationRules []model.NotificationRule, webhookURL, message, avatar, username string) *Slack {
+func NewSlack(client *http.Client, notificationRules []model.NotificationRule, reactionRules []model.ReactionRule, webhookURL, token, message, avatar, username string) *Slack {
 	return &Slack{
 		client:            client,
 		notificationRules: notificationRules,
+		reactionRules:     reactionRules,
 		webhookURL:        webhookURL,
+		token:             token,
 		message:           message,
 		avatar:            avatar,
 		username:          username,
 	}
 }
 
-func (s *Slack) NotifyMergeRequestApproved(mergeRequest model.MergeRequestInfo) error {
+func (s *Slack) ReactToMessage(mergeRequest model.MergeRequestInfo, reactionRule model.ReactionRule) error {
+	// TODO: filter messages reaction per channel
 	// channels := s.ChannelsForMergeRequest(mergeRequest)
 
 	// Search for previous message
 	var search_terms = fmt.Sprintf("%s <%s|%s> by %s", s.message, mergeRequest.ObjectAttributes.URL, mergeRequest.ObjectAttributes.Title, mergeRequest.User.Name)
 
-	s.search(search_terms)
+	// TODO: use reactionRule only when actually reacting
+	s.search(search_terms, reactionRule)
 
 	return nil
+}
+
+func (s *Slack) GetReactionRules() []model.ReactionRule {
+	return s.reactionRules
 }
 
 func (s *Slack) NotifyMergeRequestCreated(mergeRequest model.MergeRequestInfo) error {
@@ -112,7 +121,7 @@ func (s *Slack) sendMessage(message []byte) error {
 	return nil
 }
 
-func (s *Slack) search(search_terms string) string {
+func (s *Slack) search(search_terms string, reactionRule model.ReactionRule) string {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://slack.com/api/search.messages?query=%s", strings.ReplaceAll(search_terms, " ", "%20")), bytes.NewBufferString(""))
 	if err != nil {
 		return "a"
@@ -120,7 +129,7 @@ func (s *Slack) search(search_terms string) string {
 
 	// TODO: make sure we have the correct token
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Authorization", "Bearer xoxp-1105972459328-1082432263299-3758422812340-fa45e6a9bcadae3994758ad86403f4f4")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.token))
 
 	resp, err := s.client.Do(req)
 	if err != nil {
@@ -153,7 +162,7 @@ func (s *Slack) search(search_terms string) string {
 	//---------------------------------------- Add reaction
 	data := url.Values{}
 	data.Set("channel", channelId)
-	data.Set("name", "thumbsup")
+	data.Set("name", reactionRule.Reaction)
 	data.Set("timestamp", ts)
 
 	req1, err1 := http.NewRequest(http.MethodPost, "https://slack.com/api/reactions.add", strings.NewReader(data.Encode()))
@@ -163,7 +172,7 @@ func (s *Slack) search(search_terms string) string {
 
 	// TODO: make sure we have the correct token
 	req1.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req1.Header.Set("Authorization", "Bearer xoxp-1105972459328-1082432263299-3758422812340-fa45e6a9bcadae3994758ad86403f4f4")
+	req1.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.token))
 
 	resp1, e := s.client.Do(req1)
 	if e != nil {
@@ -175,6 +184,10 @@ func (s *Slack) search(search_terms string) string {
 		fmt.Printf("Reaction response codeStatus code: %d, expected 200", resp.StatusCode)
 		return fmt.Sprintf("Reaction response codeStatus code: %d, expected 200", resp.StatusCode)
 	}
+
+	c, _ := io.ReadAll(resp.Body)
+
+	fmt.Println(string(c))
 
 	fmt.Printf("Reaction posted")
 	return "end"

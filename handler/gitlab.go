@@ -38,20 +38,21 @@ func (g *Gitlab) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		if mr.ObjectAttributes.Action == "approved" {
-			err = g.provider.NotifyMergeRequestApproved(mr)
-			if err != nil {
-				return err
+		for _, data := range g.provider.GetReactionRules() {
+			if mr.ObjectAttributes.Action == data.Action {
+				err = g.provider.ReactToMessage(mr, data)
+				if err != nil {
+					return err
+				}
+
+				fmt.Fprint(writer, fmt.Sprintf("Reacting :%s: to MR", data.Reaction))
+				return
 			}
-
-			fmt.Fprint(writer, "MR Approved OK....")
-
-			return
 		}
 
-		// Filter events by "MergeRequest" opened
+		// Filter events by other then "MergeRequest" opened
 		if mr.ObjectAttributes.Action != "open" {
-			fmt.Fprint(writer, "We can handle only open & approved events")
+			fmt.Fprint(writer, fmt.Sprintf("We cannot handle %s event action", mr.ObjectAttributes.Action))
 			return
 		}
 
