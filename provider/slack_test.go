@@ -14,6 +14,7 @@ func TestChannelsForMergeRequestSingleRule(t *testing.T) {
 	var mergeRequest model.MergeRequestInfo
 	var jsonString string
 	var notifications []model.NotificationRule
+	var reactions []model.ReactionRule
 
 	payload, err := ioutil.ReadFile("../payload/merge_request-open-just-testing.json")
 	assert.Empty(t, err)
@@ -26,13 +27,19 @@ func TestChannelsForMergeRequestSingleRule(t *testing.T) {
 	err = json.Unmarshal([]byte(jsonString), &notifications)
 	assert.Empty(t, err)
 
+	jsonString = "[{\"action\":\"approved\",\"reaction\":\"thumbsup\"}]"
+	err = json.Unmarshal([]byte(jsonString), &reactions)
+	assert.Empty(t, err)
+
 	slack := NewSlack(
 		http.DefaultClient,
 		notifications,
+		reactions,
 		"https://testing.com",
 		"New MR",
 		"https://avatar",
 		"Username",
+		"Token",
 	)
 
 	assert.Equal(t, []string{"#tested"}, slack.ChannelsForMergeRequest(mergeRequest))
@@ -42,6 +49,7 @@ func TestChannelsForMergeRequestMultipleRules(t *testing.T) {
 	var mergeRequest model.MergeRequestInfo
 	var jsonString string
 	var notifications []model.NotificationRule
+	var reactions []model.ReactionRule
 
 	payload, err := ioutil.ReadFile("../payload/merge_request-open-enabling-team.json")
 	assert.Empty(t, err)
@@ -54,13 +62,19 @@ func TestChannelsForMergeRequestMultipleRules(t *testing.T) {
 	err = json.Unmarshal([]byte(jsonString), &notifications)
 	assert.Empty(t, err)
 
+	jsonString = "[{\"action\":\"approved\",\"reaction\":\"thumbsup\"}]"
+	err = json.Unmarshal([]byte(jsonString), &reactions)
+	assert.Empty(t, err)
+
 	slack := NewSlack(
 		http.DefaultClient,
 		notifications,
+		reactions,
 		"https://testing.com",
 		"New MR",
 		"https://avatar",
 		"Username",
+		"Token",
 	)
 
 	assert.Equal(t, []string{"#multiple-rules"}, slack.ChannelsForMergeRequest(mergeRequest))
@@ -70,6 +84,7 @@ func TestChannelsForMergeRequestMultipleRulesWithMoreThanOneLabel(t *testing.T) 
 	var mergeRequest model.MergeRequestInfo
 	var jsonString string
 	var notifications []model.NotificationRule
+	var reactions []model.ReactionRule
 
 	payload, err := ioutil.ReadFile("../payload/merge_request-open-enabling-team.json")
 	assert.Empty(t, err)
@@ -82,13 +97,19 @@ func TestChannelsForMergeRequestMultipleRulesWithMoreThanOneLabel(t *testing.T) 
 	err = json.Unmarshal([]byte(jsonString), &notifications)
 	assert.Empty(t, err)
 
+	jsonString = "[{\"action\":\"approved\",\"reaction\":\"thumbsup\"}]"
+	err = json.Unmarshal([]byte(jsonString), &reactions)
+	assert.Empty(t, err)
+
 	slack := NewSlack(
 		http.DefaultClient,
 		notifications,
+		reactions,
 		"https://testing.com",
 		"New MR",
 		"https://avatar",
 		"Username",
+		"Token",
 	)
 
 	assert.Equal(t, []string{"#multiple-rules"}, slack.ChannelsForMergeRequest(mergeRequest))
@@ -98,6 +119,7 @@ func TestChannelsForMergeRequestNotMatchingLabel(t *testing.T) {
 	var mergeRequest model.MergeRequestInfo
 	var jsonString string
 	var notifications []model.NotificationRule
+	var reactions []model.ReactionRule
 
 	payload, err := ioutil.ReadFile("../payload/merge_request-open-just-testing.json")
 	assert.Empty(t, err)
@@ -110,13 +132,19 @@ func TestChannelsForMergeRequestNotMatchingLabel(t *testing.T) {
 	err = json.Unmarshal([]byte(jsonString), &notifications)
 	assert.Empty(t, err)
 
+	jsonString = "[{\"action\":\"approved\",\"reaction\":\"thumbsup\"}]"
+	err = json.Unmarshal([]byte(jsonString), &reactions)
+	assert.Empty(t, err)
+
 	slack := NewSlack(
 		http.DefaultClient,
 		notifications,
+		reactions,
 		"https://testing.com",
 		"New MR",
 		"https://avatar",
 		"Username",
+		"Token",
 	)
 
 	assert.Equal(t, []string{}, slack.ChannelsForMergeRequest(mergeRequest))
