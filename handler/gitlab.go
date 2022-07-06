@@ -57,8 +57,7 @@ func (g *Gitlab) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		err = g.provider.NotifyMergeRequestCreated(mr)
-		if err != nil {
+		if err = g.provider.NotifyMergeRequestCreated(mr); err != nil {
 			return err
 		}
 

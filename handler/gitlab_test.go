@@ -1,6 +1,7 @@
 package handler_test
 
 import (
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -156,6 +157,33 @@ func TestPostOnSlackWithMergeRequestRejected(t *testing.T) {
 			assert.FailNow(t, "Code should not reach this method")
 
 			return
+		},
+	}
+
+	handler.NewGitlab(provider).ServeHTTP(recorder, request)
+
+	assert.Equal(t, "We cannot handle rejected event action", recorder.Body.String())
+}
+
+func TestPostOnSlackWithReactToMessageFailure(t *testing.T) {
+	dat, err := ioutil.ReadFile("../payload/merge_request-rejected.json")
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"http://some-url.com",
+		strings.NewReader(string(dat)),
+	)
+
+	provider := &SpyProvider{
+		NotifyMergeRequestCreatedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
+			assert.FailNow(t, "Code should not reach this method")
+
+			return
+		},
+		ReactToMessageFunc: func(mergeRequest model.MergeRequestInfo, reactionRule model.ReactionRule) (err error) {
+			return errors.New("Error from ReactToMessage")
 		},
 	}
 
