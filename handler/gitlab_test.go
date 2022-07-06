@@ -134,3 +134,32 @@ func TestPostOnSlackWithMergeRequestApproved(t *testing.T) {
 
 	assert.Equal(t, "Reacting :thumbsup: to MR", recorder.Body.String())
 }
+
+func TestPostOnSlackWithMergeRequestRejected(t *testing.T) {
+	dat, err := ioutil.ReadFile("../payload/merge_request-rejected.json")
+	assert.Empty(t, err)
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"http://some-url.com",
+		strings.NewReader(string(dat)),
+	)
+
+	provider := &SpyProvider{
+		NotifyMergeRequestCreatedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
+			assert.FailNow(t, "Code should not reach this method")
+
+			return
+		},
+		ReactToMessageFunc: func(mergeRequest model.MergeRequestInfo, reactionRule model.ReactionRule) (err error) {
+			assert.FailNow(t, "Code should not reach this method")
+
+			return
+		},
+	}
+
+	handler.NewGitlab(provider).ServeHTTP(recorder, request)
+
+	assert.Equal(t, "We cannot handle rejected event action", recorder.Body.String())
+}
