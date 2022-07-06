@@ -19,9 +19,11 @@ image/build:
 
 app/run:
 	docker run -it --rm -p 8000:80 \
-        -e SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL}" \
-        -e NOTIFICATION_RULES="${NOTIFICATION_RULES}" \
-        ${TURBO_ENIGMA_IMAGE}
+		-e SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL}" \
+		-e SLACK_TOKEN="${SLACK_TOKEN}" \
+		-e NOTIFICATION_RULES="${NOTIFICATION_RULES}" \
+		-e REACTION_RULES="${REACTION_RULES}" \
+		${TURBO_ENIGMA_IMAGE}
 
 app/rerun: image/build app/run
 
