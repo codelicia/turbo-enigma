@@ -10,6 +10,7 @@ slack:
   message: "New Merge Request Created"
   username: "codelicia/turbo-enigma"
   webhookUrl: http://slack-webhook.localhost
+  token: xoxp-slack-token
 
 notificationRules:
   - channel: "#enabling-team"
