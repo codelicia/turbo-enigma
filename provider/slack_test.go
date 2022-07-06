@@ -29,7 +29,7 @@ func TestChannelsForMergeRequestSingleRule(t *testing.T) {
 
 	jsonString = "[{\"action\":\"approved\",\"reaction\":\"thumbsup\"}]"
 	err = json.Unmarshal([]byte(jsonString), &reactions)
-	assert.Empty(t, err)
+	assert.Nil(t, err)
 
 	slack := NewSlack(
 		http.DefaultClient,
@@ -64,7 +64,7 @@ func TestChannelsForMergeRequestMultipleRules(t *testing.T) {
 
 	jsonString = "[{\"action\":\"approved\",\"reaction\":\"thumbsup\"}]"
 	err = json.Unmarshal([]byte(jsonString), &reactions)
-	assert.Empty(t, err)
+	assert.Nil(t, err)
 
 	slack := NewSlack(
 		http.DefaultClient,
@@ -99,7 +99,7 @@ func TestChannelsForMergeRequestMultipleRulesWithMoreThanOneLabel(t *testing.T) 
 
 	jsonString = "[{\"action\":\"approved\",\"reaction\":\"thumbsup\"}]"
 	err = json.Unmarshal([]byte(jsonString), &reactions)
-	assert.Empty(t, err)
+	assert.Nil(t, err)
 
 	slack := NewSlack(
 		http.DefaultClient,

@@ -39,15 +39,16 @@ func (g *Gitlab) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		}
 
 		for _, data := range g.provider.GetReactionRules() {
-			if mr.ObjectAttributes.Action == data.Action {
-				err = g.provider.ReactToMessage(mr, data)
-				if err != nil {
-					return err
-				}
-
-				fmt.Fprint(writer, fmt.Sprintf("Reacting :%s: to MR", data.Reaction))
-				return
+			if mr.ObjectAttributes.Action != data.Action {
+				continue
 			}
+
+			if err = g.provider.ReactToMessage(mr, data); err != nil {
+				return err
+			}
+
+			fmt.Fprint(writer, fmt.Sprintf("Reacting :%s: to MR", data.Reaction))
+			return
 		}
 
 		// Filter events by other then "MergeRequest" opened
