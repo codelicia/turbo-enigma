@@ -31,14 +31,12 @@ func main() {
 	EnvManager = InitEnvironment()
 
 	var notificationRules []model.NotificationRule
-	err := json.Unmarshal([]byte(EnvManager.Get("NOTIFICATION_RULES")), &notificationRules)
-	if err != nil {
+	if err := json.Unmarshal([]byte(EnvManager.Get("NOTIFICATION_RULES")), &notificationRules); err != nil {
 		panic(err)
 	}
 
 	var reactionRules []model.ReactionRule
-	e := json.Unmarshal([]byte(EnvManager.Get("REACTION_RULES")), &reactionRules)
-	if e != nil {
+	if err := json.Unmarshal([]byte(EnvManager.Get("REACTION_RULES")), &reactionRules); err != nil {
 		panic(err)
 	}
 

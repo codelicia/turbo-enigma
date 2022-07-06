@@ -35,7 +35,7 @@ func (s *SpyProvider) GetReactionRules() []model.ReactionRule {
 
 func TestPostOnSlack(t *testing.T) {
 	dat, err := ioutil.ReadFile("../payload/merge_request-open-just-testing.json")
-	assert.Empty(t, err)
+	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
 	request := httptest.NewRequest(
@@ -83,7 +83,7 @@ func TestPostOnSlackWithEmptyBody(t *testing.T) {
 
 func TestPostOnSlackWithNewIssue(t *testing.T) {
 	dat, err := ioutil.ReadFile("../payload/issue-open.json")
-	assert.Empty(t, err)
+	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
 	request := httptest.NewRequest(
@@ -107,7 +107,7 @@ func TestPostOnSlackWithNewIssue(t *testing.T) {
 
 func TestPostOnSlackWithMergeRequestApproved(t *testing.T) {
 	dat, err := ioutil.ReadFile("../payload/merge_request-approved.json")
-	assert.Empty(t, err)
+	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
 	request := httptest.NewRequest(
@@ -137,7 +137,7 @@ func TestPostOnSlackWithMergeRequestApproved(t *testing.T) {
 
 func TestPostOnSlackWithMergeRequestRejected(t *testing.T) {
 	dat, err := ioutil.ReadFile("../payload/merge_request-rejected.json")
-	assert.Empty(t, err)
+	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
 	request := httptest.NewRequest(
