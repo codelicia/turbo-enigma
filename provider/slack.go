@@ -29,14 +29,18 @@ type LocatedMessage struct {
 	permalink   string
 }
 
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 type Slack struct {
-	client                                       *http.Client
+	client                                       HTTPClient
 	notificationRules                            []model.NotificationRule
 	reactionRules                                []model.ReactionRule
 	webhookURL, message, avatar, username, token string
 }
 
-func NewSlack(client *http.Client, notificationRules []model.NotificationRule, reactionRules []model.ReactionRule, webhookURL, token, message, avatar, username string) *Slack {
+func NewSlack(client HTTPClient, notificationRules []model.NotificationRule, reactionRules []model.ReactionRule, webhookURL, token, message, avatar, username string) *Slack {
 	return &Slack{
 		client:            client,
 		notificationRules: notificationRules,
