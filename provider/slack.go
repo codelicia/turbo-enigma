@@ -22,6 +22,13 @@ type search struct {
 	Query string `json:"query"`
 }
 
+type LocatedMessage struct {
+	channelID   string
+	channelName string
+	timestamp   string
+	permalink   string
+}
+
 type Slack struct {
 	client                                       *http.Client
 	notificationRules                            []model.NotificationRule
@@ -43,14 +50,15 @@ func NewSlack(client *http.Client, notificationRules []model.NotificationRule, r
 }
 
 func (s *Slack) ReactToMessage(mergeRequest model.MergeRequestInfo, reactionRule model.ReactionRule) error {
-	// TODO: filter messages reaction per channel
-	// channels := s.ChannelsForMergeRequest(mergeRequest)
-
 	// Search for previous message
 	var searchTerms = fmt.Sprintf("%s <%s|%s> by %s", s.message, mergeRequest.ObjectAttributes.URL, mergeRequest.ObjectAttributes.Title, mergeRequest.User.Name)
 
-	// TODO: use reactionRule only when actually reacting
-	s.search(searchTerms, reactionRule)
+	locatedMessage, err := s.search(searchTerms)
+	if err != nil {
+		return err
+	}
+
+	s.postReaction(locatedMessage, reactionRule)
 
 	return nil
 }
@@ -121,76 +129,65 @@ func (s *Slack) sendMessage(message []byte) error {
 	return nil
 }
 
-func (s *Slack) search(searchTerms string, reactionRule model.ReactionRule) string {
+func (s *Slack) search(searchTerms string) (message LocatedMessage, err error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://slack.com/api/search.messages?query=%s", strings.ReplaceAll(searchTerms, " ", "%20")), bytes.NewBufferString(""))
 	if err != nil {
-		return "a"
+		return
 	}
 
-	// TODO: make sure we have the correct token
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.token))
 
 	resp, err := s.client.Do(req)
 	if err != nil {
-		return "b"
+		return
 	}
 	defer resp.Body.Close()
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "x"
+		return
 	}
 
-	// fmt.Println(string(b))
-
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Sprintln(resp.StatusCode)
+		return
 	}
 
 	searchResults, err := jsonDecodeMessage(string(b))
 
-	// TODO: filter per channel and get the latest message only
-	var ts = searchResults.Messages.Matches[0].Ts
-	var channelID = searchResults.Messages.Matches[0].Channel.ID
+	return LocatedMessage{
+		channelID:   searchResults.Messages.Matches[0].Channel.ID,
+		channelName: searchResults.Messages.Matches[0].Channel.Name,
+		timestamp:   searchResults.Messages.Matches[0].Ts,
+		permalink:   searchResults.Messages.Matches[0].Permalink,
+	}, nil
+}
 
-	fmt.Println(ts)
-	fmt.Println(channelID)
-	fmt.Println(searchResults.Messages.Matches[0].Channel.Name)
-	fmt.Println(searchResults.Messages.Matches[0].Permalink)
-
-	//---------------------------------------- Add reaction
+func (s *Slack) postReaction(message LocatedMessage, reactionRule model.ReactionRule) error {
 	data := url.Values{}
-	data.Set("channel", channelID)
+	data.Set("channel", message.channelID)
 	data.Set("name", reactionRule.Reaction)
-	data.Set("timestamp", ts)
+	data.Set("timestamp", message.timestamp)
 
-	req1, err1 := http.NewRequest(http.MethodPost, "https://slack.com/api/reactions.add", strings.NewReader(data.Encode()))
-	if err1 != nil {
-		return "a"
+	req, err := http.NewRequest(http.MethodPost, "https://slack.com/api/reactions.add", strings.NewReader(data.Encode()))
+	if err != nil {
+		return err
 	}
 
-	// TODO: make sure we have the correct token
-	req1.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req1.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.token))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.token))
 
-	resp1, e := s.client.Do(req1)
+	resp, e := s.client.Do(req)
 	if e != nil {
-		return "b"
+		return e
 	}
-	defer resp1.Body.Close()
+	defer resp.Body.Close()
 
-	if resp1.StatusCode != http.StatusOK {
-		fmt.Printf("Reaction response codeStatus code: %d, expected 200", resp.StatusCode)
-		return fmt.Sprintf("Reaction response codeStatus code: %d, expected 200", resp.StatusCode)
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("response codeStatus code: %d, expected 200", resp.StatusCode)
 	}
 
-	c, _ := io.ReadAll(resp.Body)
-
-	fmt.Println(string(c))
-
-	fmt.Printf("Reaction posted")
-	return "end"
+	return nil
 }
 
 func jsonDecodeMessage(jsonString string) (message model.SearchResult, err error) {
