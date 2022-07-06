@@ -14,10 +14,23 @@ import (
 
 type SpyProvider struct {
 	NotifyMergeRequestCreatedFunc func(mergeRequest model.MergeRequestInfo) error
+	ReactToMessageFunc            func(mergeRequest model.MergeRequestInfo, reactionRule model.ReactionRule) error
+	GetReactionRulesFunc          func() []model.ReactionRule
 }
 
 func (s *SpyProvider) NotifyMergeRequestCreated(mergeRequest model.MergeRequestInfo) error {
 	return s.NotifyMergeRequestCreatedFunc(mergeRequest)
+}
+
+func (s *SpyProvider) ReactToMessage(mergeRequest model.MergeRequestInfo, reactionRule model.ReactionRule) error {
+	return s.ReactToMessageFunc(mergeRequest, reactionRule)
+}
+
+func (s *SpyProvider) GetReactionRules() []model.ReactionRule {
+	return []model.ReactionRule{{
+		Action:   "approved",
+		Reaction: "thumbsup",
+	}}
 }
 
 func TestPostOnSlack(t *testing.T) {
@@ -89,7 +102,7 @@ func TestPostOnSlackWithNewIssue(t *testing.T) {
 
 	handler.NewGitlab(provider).ServeHTTP(recorder, request)
 
-	assert.Equal(t, "We just care about new merge_requests", recorder.Body.String())
+	assert.Equal(t, "We just care about merge_request events", recorder.Body.String())
 }
 
 func TestPostOnSlackWithMergeRequestApproved(t *testing.T) {
@@ -109,9 +122,15 @@ func TestPostOnSlackWithMergeRequestApproved(t *testing.T) {
 
 			return
 		},
+		ReactToMessageFunc: func(mergeRequest model.MergeRequestInfo, reactionRule model.ReactionRule) (err error) {
+			assert.Equal(t, reactionRule.Action, "approved")
+			assert.Equal(t, reactionRule.Reaction, "thumbsup")
+
+			return
+		},
 	}
 
 	handler.NewGitlab(provider).ServeHTTP(recorder, request)
 
-	assert.Equal(t, "We just care about new merge_requests", recorder.Body.String())
+	assert.Equal(t, "Reacting :thumbsup: to MR", recorder.Body.String())
 }
