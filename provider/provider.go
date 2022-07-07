@@ -5,7 +5,7 @@ import (
 )
 
 type Provider interface {
-	NotifyMergeRequestCreated(mergeRequest model.MergeRequestInfo) error
-	ReactToMessage(mergeRequest model.MergeRequestInfo, reactionRule model.ReactionRule) error
-	GetReactionRules() []model.ReactionRule
+	NotifyMergeRequestOpened(mergeRequest model.MergeRequestInfo) error
+	NotifyMergeRequestMerged(mergeRequest model.MergeRequestInfo) error
+	NotifyMergeRequestApproved(mergeRequest model.MergeRequestInfo) error
 }
