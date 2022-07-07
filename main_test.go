@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 )
@@ -102,4 +104,38 @@ func TestEnvironmentMissingSlackToken(t *testing.T) {
 	InitEnvironment()
 
 	t.Error("should panic about missing env: SLACK_TOKEN")
+}
+
+func TestEnvironmentWithInvalidReactionRulesJson(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			ok := r.(*json.SyntaxError)
+			assert.ErrorContains(t, ok, "unexpected end of JSON input")
+		}
+	}()
+
+	setupTestEnvironmentVariables()
+	os.Unsetenv("REACTION_RULES")
+	os.Setenv("REACTION_RULES", `{"wrong`)
+
+	main()
+
+	t.Error("should panic invalid json on REACTION_RULES")
+}
+
+func TestEnvironmentWithInvalidNotificationRuleJson(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			ok := r.(*json.SyntaxError)
+			assert.ErrorContains(t, ok, "unexpected end of JSON input")
+		}
+	}()
+
+	setupTestEnvironmentVariables()
+	os.Unsetenv("NOTIFICATION_RULES")
+	os.Setenv("NOTIFICATION_RULES", `{"wrong`)
+
+	main()
+
+	t.Error("should panic invalid json on NOTIFICATION_RULES")
 }
