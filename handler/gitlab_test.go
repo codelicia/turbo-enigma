@@ -14,24 +14,19 @@ import (
 )
 
 type SpyProvider struct {
-	NotifyMergeRequestCreatedFunc func(mergeRequest model.MergeRequestInfo) error
-	ReactToMessageFunc            func(mergeRequest model.MergeRequestInfo, reactionRule model.ReactionRule) error
-	GetReactionRulesFunc          func() []model.ReactionRule
+	NotifyMergeRequestOpenedFunc   func(mergeRequest model.MergeRequestInfo) error
+	NotifyMergeRequestMergedFunc   func(mergeRequest model.MergeRequestInfo) error
+	NotifyMergeRequestApprovedFunc func(mergeRequest model.MergeRequestInfo) error
 }
 
-func (s *SpyProvider) NotifyMergeRequestCreated(mergeRequest model.MergeRequestInfo) error {
-	return s.NotifyMergeRequestCreatedFunc(mergeRequest)
+func (s *SpyProvider) NotifyMergeRequestOpened(mergeRequest model.MergeRequestInfo) error {
+	return s.NotifyMergeRequestOpenedFunc(mergeRequest)
 }
-
-func (s *SpyProvider) ReactToMessage(mergeRequest model.MergeRequestInfo, reactionRule model.ReactionRule) error {
-	return s.ReactToMessageFunc(mergeRequest, reactionRule)
+func (s *SpyProvider) NotifyMergeRequestMerged(mergeRequest model.MergeRequestInfo) error {
+	return s.NotifyMergeRequestMergedFunc(mergeRequest)
 }
-
-func (s *SpyProvider) GetReactionRules() []model.ReactionRule {
-	return []model.ReactionRule{{
-		Action:   "approved",
-		Reaction: "thumbsup",
-	}}
+func (s *SpyProvider) NotifyMergeRequestApproved(mergeRequest model.MergeRequestInfo) error {
+	return s.NotifyMergeRequestApprovedFunc(mergeRequest)
 }
 
 func TestPostOnSlack(t *testing.T) {
@@ -46,7 +41,7 @@ func TestPostOnSlack(t *testing.T) {
 	)
 
 	provider := &SpyProvider{
-		NotifyMergeRequestCreatedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
+		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.Equal(t, "https://gitlab.com/alexandre.eher/turbo-enigma/-/merge_requests/1", mergeRequest.ObjectAttributes.URL)
 			assert.Equal(t, "Add LICENSE", mergeRequest.ObjectAttributes.Title)
 			assert.Equal(t, "Alexandre Eher", mergeRequest.User.Name)
@@ -69,7 +64,7 @@ func TestPostOnSlackWithEmptyBody(t *testing.T) {
 	)
 
 	provider := &SpyProvider{
-		NotifyMergeRequestCreatedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
+		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.FailNow(t, "Code should not reach this method")
 
 			return
@@ -94,7 +89,7 @@ func TestPostOnSlackWithNewIssue(t *testing.T) {
 	)
 
 	provider := &SpyProvider{
-		NotifyMergeRequestCreatedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
+		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.FailNow(t, "Code should not reach this method")
 
 			return
@@ -118,22 +113,21 @@ func TestPostOnSlackWithMergeRequestApproved(t *testing.T) {
 	)
 
 	provider := &SpyProvider{
-		NotifyMergeRequestCreatedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
+		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.FailNow(t, "Code should not reach this method")
 
 			return
 		},
-		ReactToMessageFunc: func(mergeRequest model.MergeRequestInfo, reactionRule model.ReactionRule) (err error) {
-			assert.Equal(t, reactionRule.Action, "approved")
-			assert.Equal(t, reactionRule.Reaction, "thumbsup")
+		NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 
+			// TODO: assertions is missing
 			return
 		},
 	}
 
 	handler.NewGitlab(provider).ServeHTTP(recorder, request)
 
-	assert.Equal(t, "Reacting :thumbsup: to MR", recorder.Body.String())
+	assert.Equal(t, "Reacting to approved event", recorder.Body.String())
 }
 
 func TestPostOnSlackWithMergeRequestRejected(t *testing.T) {
@@ -148,12 +142,12 @@ func TestPostOnSlackWithMergeRequestRejected(t *testing.T) {
 	)
 
 	provider := &SpyProvider{
-		NotifyMergeRequestCreatedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
+		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.FailNow(t, "Code should not reach this method")
 
 			return
 		},
-		ReactToMessageFunc: func(mergeRequest model.MergeRequestInfo, reactionRule model.ReactionRule) (err error) {
+		NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.FailNow(t, "Code should not reach this method")
 
 			return
@@ -177,12 +171,12 @@ func TestPostOnSlackWithReactToMessageFailure(t *testing.T) {
 	)
 
 	provider := &SpyProvider{
-		NotifyMergeRequestCreatedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
+		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.FailNow(t, "Code should not reach this method")
 
 			return
 		},
-		ReactToMessageFunc: func(mergeRequest model.MergeRequestInfo, reactionRule model.ReactionRule) (err error) {
+		NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			return errors.New("Error from ReactToMessage")
 		},
 	}

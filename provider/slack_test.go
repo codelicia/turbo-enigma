@@ -57,7 +57,6 @@ func TestChannelsForMergeRequestSingleRule(t *testing.T) {
 	)
 
 	assert.Equal(t, []string{"#tested"}, slack.ChannelsForMergeRequest(mergeRequest))
-	assert.Equal(t, []model.ReactionRule{{Action: "approved", Reaction: "thumbsup"}}, slack.GetReactionRules())
 }
 
 func TestChannelsForMergeRequestMultipleRules(t *testing.T) {

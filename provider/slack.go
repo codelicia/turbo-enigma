@@ -67,11 +67,7 @@ func (s *Slack) ReactToMessage(mergeRequest model.MergeRequestInfo, reactionRule
 	return nil
 }
 
-func (s *Slack) GetReactionRules() []model.ReactionRule {
-	return s.reactionRules
-}
-
-func (s *Slack) NotifyMergeRequestCreated(mergeRequest model.MergeRequestInfo) error {
+func (s *Slack) NotifyMergeRequestOpened(mergeRequest model.MergeRequestInfo) error {
 	channels := s.ChannelsForMergeRequest(mergeRequest)
 
 	for _, channel := range channels {
@@ -110,6 +106,14 @@ func (s *Slack) ChannelsForMergeRequest(mergeRequest model.MergeRequestInfo) []s
 	}
 
 	return channels
+}
+
+func (s *Slack) NotifyMergeRequestMerged(mergeRequest model.MergeRequestInfo) error {
+	return s.ReactToMessage(mergeRequest, model.ReactionRule{Action: "merge", Reaction: "white_tick"})
+}
+
+func (s *Slack) NotifyMergeRequestApproved(mergeRequest model.MergeRequestInfo) error {
+	return s.ReactToMessage(mergeRequest, model.ReactionRule{Action: "approve", Reaction: "thumbsup"})
 }
 
 func (s *Slack) sendMessage(message []byte) error {
