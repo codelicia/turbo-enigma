@@ -47,6 +47,8 @@ func (g *Gitlab) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 			if err = g.provider.NotifyMergeRequestMerged(mr); err != nil {
 				return err
 			}
+			fmt.Fprint(writer, "Reacting to merge event")
+			return
 		case "approved":
 			if err = g.provider.NotifyMergeRequestApproved(mr); err != nil {
 				return err

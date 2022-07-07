@@ -101,6 +101,34 @@ func TestPostOnSlackWithNewIssue(t *testing.T) {
 	assert.Equal(t, "We just care about merge_request events", recorder.Body.String())
 }
 
+func TestPostOnSlackWithMergeRequestMerged(t *testing.T) {
+	dat, err := ioutil.ReadFile("../payload/merge_request-merge.json")
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"http://some-url.com",
+		strings.NewReader(string(dat)),
+	)
+
+	provider := &SpyProvider{
+		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
+			assert.FailNow(t, "Code should not reach this method")
+
+			return
+		},
+		NotifyMergeRequestMergedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
+			assert.Equal(t, mergeRequest.ObjectAttributes.Action, "merge")
+			return
+		},
+	}
+
+	handler.NewGitlab(provider).ServeHTTP(recorder, request)
+
+	assert.Equal(t, "Reacting to merge event", recorder.Body.String())
+}
+
 func TestPostOnSlackWithMergeRequestApproved(t *testing.T) {
 	dat, err := ioutil.ReadFile("../payload/merge_request-approved.json")
 	assert.Nil(t, err)
@@ -119,8 +147,7 @@ func TestPostOnSlackWithMergeRequestApproved(t *testing.T) {
 			return
 		},
 		NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
-
-			// TODO: assertions is missing
+			assert.Equal(t, mergeRequest.ObjectAttributes.Action, "approved")
 			return
 		},
 	}

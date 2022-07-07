@@ -10,8 +10,8 @@ import (
 func setupTestEnvironmentVariables() {
 	os.Setenv("HTTP_PORT", "Just testing...")
 	os.Setenv("MESSAGE", "Just testing...")
-	os.Setenv("NOTIFICATION_RULES", "[{\"channel\":\"#test\", \"labels\":[\"test\"]}]")
-	os.Setenv("REACTION_RULES", "[{\"action\":\"approved\", \"reaction\":\"thumbsup\"}]")
+	os.Setenv("NOTIFICATION_RULES", `[{"channel":"#test", "labels":["test"]}]`)
+	os.Setenv("REACTION_RULES", `[{"action":"approved", "reaction":"thumbsup"}]`)
 	os.Setenv("SLACK_AVATAR_URL", "Just testing...")
 	os.Setenv("SLACK_USERNAME", "Just testing...")
 	os.Setenv("SLACK_WEBHOOK_URL", "Just testing...")
