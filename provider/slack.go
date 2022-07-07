@@ -108,12 +108,36 @@ func (s *Slack) ChannelsForMergeRequest(mergeRequest model.MergeRequestInfo) []s
 	return channels
 }
 
-func (s *Slack) NotifyMergeRequestMerged(mergeRequest model.MergeRequestInfo) error {
-	return s.ReactToMessage(mergeRequest, model.ReactionRule{Action: "merge", Reaction: "white_tick"})
-}
-
 func (s *Slack) NotifyMergeRequestApproved(mergeRequest model.MergeRequestInfo) error {
 	return s.ReactToMessage(mergeRequest, model.ReactionRule{Action: "approve", Reaction: "thumbsup"})
+}
+
+func (s *Slack) NotifyMergeRequestUnapproved(mergeRequest model.MergeRequestInfo) error {
+	return s.ReactToMessage(mergeRequest, model.ReactionRule{Action: "approve", Reaction: "thumbsdown"})
+}
+
+func (s *Slack) NotifyMergeRequestClose(mergeRequest model.MergeRequestInfo) error {
+	return s.ReactToMessage(mergeRequest, model.ReactionRule{Action: "close", Reaction: "x"})
+}
+
+func (s *Slack) NotifyMergeRequestReopen(mergeRequest model.MergeRequestInfo) error {
+	return s.ReactToMessage(mergeRequest, model.ReactionRule{Action: "reopen", Reaction: "recycle"})
+}
+
+func (s *Slack) NotifyMergeRequestUpdate(mergeRequest model.MergeRequestInfo) error {
+	return s.ReactToMessage(mergeRequest, model.ReactionRule{Action: "update", Reaction: "star"})
+}
+
+func (s *Slack) NotifyMergeRequestApproval(mergeRequest model.MergeRequestInfo) error {
+	return s.ReactToMessage(mergeRequest, model.ReactionRule{Action: "approval", Reaction: "green_salad"})
+}
+
+func (s *Slack) NotifyMergeRequestUnapproval(mergeRequest model.MergeRequestInfo) error {
+	return s.ReactToMessage(mergeRequest, model.ReactionRule{Action: "unapproval", Reaction: "tomato"})
+}
+
+func (s *Slack) NotifyMergeRequestMerged(mergeRequest model.MergeRequestInfo) error {
+	return s.ReactToMessage(mergeRequest, model.ReactionRule{Action: "merge", Reaction: "white_check_mark"})
 }
 
 func (s *Slack) sendMessage(message []byte) error {
