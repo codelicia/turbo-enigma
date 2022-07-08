@@ -9,6 +9,7 @@ import (
 	"testing"
 	"turboenigma/handler"
 	"turboenigma/model"
+	"turboenigma/provider"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -23,6 +24,22 @@ type SpyProvider struct {
 	NotifyMergeRequestApprovalFunc   func(mergeRequest model.MergeRequestInfo) error
 	NotifyMergeRequestUnapprovalFunc func(mergeRequest model.MergeRequestInfo) error
 	NotifyMergeRequestMergedFunc     func(mergeRequest model.MergeRequestInfo) error
+}
+
+func usePayload(t *testing.T, filepath string) string {
+	content, err := ioutil.ReadFile(filepath)
+	assert.Nil(t, err)
+
+	return string(content)
+}
+
+func doRequest(provider provider.Provider, content string) *httptest.ResponseRecorder {
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodPost, "http://some-url.com", strings.NewReader(content))
+
+	handler.NewGitlab(provider).ServeHTTP(recorder, request)
+
+	return recorder
 }
 
 func (s *SpyProvider) NotifyMergeRequestOpened(mergeRequest model.MergeRequestInfo) error {
@@ -54,16 +71,6 @@ func (s *SpyProvider) NotifyMergeRequestMerged(mergeRequest model.MergeRequestIn
 }
 
 func TestPostOnSlack(t *testing.T) {
-	dat, err := ioutil.ReadFile("../payload/merge_request-open-just-testing.json")
-	assert.Nil(t, err)
-
-	recorder := httptest.NewRecorder()
-	request := httptest.NewRequest(
-		http.MethodPost,
-		"http://some-url.com",
-		strings.NewReader(string(dat)),
-	)
-
 	provider := &SpyProvider{
 		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.Equal(t, "https://gitlab.com/alexandre.eher/turbo-enigma/-/merge_requests/1", mergeRequest.ObjectAttributes.URL)
@@ -74,19 +81,12 @@ func TestPostOnSlack(t *testing.T) {
 		},
 	}
 
-	handler.NewGitlab(provider).ServeHTTP(recorder, request)
+	recorder := doRequest(provider, usePayload(t, "../payload/merge_request-open-just-testing.json"))
 
 	assert.Equal(t, "OK", recorder.Body.String())
 }
 
 func TestPostOnSlackWithEmptyBody(t *testing.T) {
-	recorder := httptest.NewRecorder()
-	request := httptest.NewRequest(
-		http.MethodPost,
-		"http://some-url.com",
-		strings.NewReader(""),
-	)
-
 	provider := &SpyProvider{
 		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.FailNow(t, "Code should not reach this method")
@@ -95,23 +95,13 @@ func TestPostOnSlackWithEmptyBody(t *testing.T) {
 		},
 	}
 
-	handler.NewGitlab(provider).ServeHTTP(recorder, request)
+	recorder := doRequest(provider, "")
 
 	assert.Equal(t, "Error -> Body is missing\n", recorder.Body.String())
 	assert.Equal(t, http.StatusBadRequest, recorder.Result().StatusCode)
 }
 
 func TestPostOnSlackWithNewIssue(t *testing.T) {
-	dat, err := ioutil.ReadFile("../payload/issue-open.json")
-	assert.Nil(t, err)
-
-	recorder := httptest.NewRecorder()
-	request := httptest.NewRequest(
-		http.MethodPost,
-		"http://some-url.com",
-		strings.NewReader(string(dat)),
-	)
-
 	provider := &SpyProvider{
 		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.FailNow(t, "Code should not reach this method")
@@ -120,119 +110,84 @@ func TestPostOnSlackWithNewIssue(t *testing.T) {
 		},
 	}
 
-	handler.NewGitlab(provider).ServeHTTP(recorder, request)
+	recorder := doRequest(provider, usePayload(t, "../payload/issue-open.json"))
 
 	assert.Equal(t, "We just care about merge_request events", recorder.Body.String())
 }
 
 func TestPostOnSlackWithMergeRequestMerged(t *testing.T) {
-	dat, err := ioutil.ReadFile("../payload/merge_request-merge.json")
-	assert.Nil(t, err)
-
-	recorder := httptest.NewRecorder()
-	request := httptest.NewRequest(
-		http.MethodPost,
-		"http://some-url.com",
-		strings.NewReader(string(dat)),
-	)
-
 	provider := &SpyProvider{
-		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
-			assert.FailNow(t, "Code should not reach this method")
-
-			return
-		},
 		NotifyMergeRequestMergedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.Equal(t, mergeRequest.ObjectAttributes.Action, "merge")
 			return
 		},
 	}
 
-	handler.NewGitlab(provider).ServeHTTP(recorder, request)
+	recorder := doRequest(provider, usePayload(t, "../payload/merge_request-merge.json"))
 
 	assert.Equal(t, "Reacting to merge event", recorder.Body.String())
 }
 
 func TestPostOnSlackWithMergeRequestApproved(t *testing.T) {
-	dat, err := ioutil.ReadFile("../payload/merge_request-approved.json")
-	assert.Nil(t, err)
-
-	recorder := httptest.NewRecorder()
-	request := httptest.NewRequest(
-		http.MethodPost,
-		"http://some-url.com",
-		strings.NewReader(string(dat)),
-	)
-
 	provider := &SpyProvider{
-		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
-			assert.FailNow(t, "Code should not reach this method")
-
-			return
-		},
 		NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.Equal(t, mergeRequest.ObjectAttributes.Action, "approved")
 			return
 		},
 	}
 
-	handler.NewGitlab(provider).ServeHTTP(recorder, request)
+	recorder := doRequest(provider, usePayload(t, "../payload/merge_request-approved.json"))
 
 	assert.Equal(t, "Reacting to approved event", recorder.Body.String())
 }
 
+func TestPostOnSlackWithMergeRequestApprovedFailed(t *testing.T) {
+	provider := &SpyProvider{
+		NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
+			return errors.New("NotifyMergeRequestApproved failed (on purpose)")
+		},
+	}
+
+	recorder := doRequest(provider, usePayload(t, "../payload/merge_request-approved.json"))
+
+	assert.Equal(t, "Error -> NotifyMergeRequestApproved failed (on purpose)\n", recorder.Body.String())
+}
+
+// TODO(malukenho): get real payload for these events, right now I'm changing just the ObjectAttributes.Action
+// func TestPostOnSlackWithMergeRequestUnapproved(t *testing.T) {
+// 	provider := &SpyProvider{
+// 		NotifyMergeRequestUnapprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
+// 			assert.Equal(t, mergeRequest.ObjectAttributes.Action, "unapproved")
+// 			return
+// 		},
+// 	}
+
+// 	recorder := doRequest(provider, usePayload(t, "../payload/merge_request-approved.json"))
+
+// 	assert.Equal(t, "Reacting to unapproved event", recorder.Body.String())
+// }
+
 func TestPostOnSlackWithMergeRequestRejected(t *testing.T) {
-	dat, err := ioutil.ReadFile("../payload/merge_request-rejected.json")
-	assert.Nil(t, err)
-
-	recorder := httptest.NewRecorder()
-	request := httptest.NewRequest(
-		http.MethodPost,
-		"http://some-url.com",
-		strings.NewReader(string(dat)),
-	)
-
 	provider := &SpyProvider{
 		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.FailNow(t, "Code should not reach this method")
-
-			return
-		},
-		NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
-			assert.FailNow(t, "Code should not reach this method")
-
 			return
 		},
 	}
 
-	handler.NewGitlab(provider).ServeHTTP(recorder, request)
+	recorder := doRequest(provider, usePayload(t, "../payload/merge_request-rejected.json"))
 
 	assert.Equal(t, "We cannot handle rejected event action", recorder.Body.String())
 }
 
 func TestPostOnSlackWithReactToMessageFailure(t *testing.T) {
-	dat, err := ioutil.ReadFile("../payload/merge_request-rejected.json")
-	assert.Nil(t, err)
-
-	recorder := httptest.NewRecorder()
-	request := httptest.NewRequest(
-		http.MethodPost,
-		"http://some-url.com",
-		strings.NewReader(string(dat)),
-	)
-
 	provider := &SpyProvider{
-		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
-			assert.FailNow(t, "Code should not reach this method")
-
-			return
-		},
 		NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			return errors.New("Error from ReactToMessage")
 		},
 	}
 
-	handler.NewGitlab(provider).ServeHTTP(recorder, request)
+	recorder := doRequest(provider, usePayload(t, "../payload/merge_request-rejected.json"))
 
 	assert.Equal(t, "We cannot handle rejected event action", recorder.Body.String())
 }
