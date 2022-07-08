@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// todo move SpyProvider to another file
 type SpyProvider struct {
 	NotifyMergeRequestOpenedFunc     func(mergeRequest model.MergeRequestInfo) error
 	NotifyMergeRequestApprovedFunc   func(mergeRequest model.MergeRequestInfo) error
@@ -27,6 +28,7 @@ type SpyProvider struct {
 }
 
 func usePayload(t *testing.T, filepath string) string {
+	t.Helper()
 	content, err := ioutil.ReadFile(filepath)
 	assert.Nil(t, err)
 
@@ -128,29 +130,33 @@ func TestPostOnSlackWithMergeRequestMerged(t *testing.T) {
 	assert.Equal(t, "Reacting to merge event", recorder.Body.String())
 }
 
-func TestPostOnSlackWithMergeRequestApproved(t *testing.T) {
-	provider := &SpyProvider{
-		NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
-			assert.Equal(t, mergeRequest.ObjectAttributes.Action, "approved")
-			return
-		},
-	}
+func TestApprovedAction(t *testing.T) {
 
-	recorder := doRequest(provider, usePayload(t, "../payload/merge_request-approved.json"))
+	t.Run("Happy path", func(t *testing.T) {
+		provider := &SpyProvider{
+			NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
+				assert.Equal(t, mergeRequest.ObjectAttributes.Action, "approved")
+				return
+			},
+		}
 
-	assert.Equal(t, "Reacting to approved event", recorder.Body.String())
-}
+		recorder := doRequest(provider, usePayload(t, "../payload/merge_request-approved.json"))
 
-func TestPostOnSlackWithMergeRequestApprovedFailed(t *testing.T) {
-	provider := &SpyProvider{
-		NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
-			return errors.New("NotifyMergeRequestApproved failed (on purpose)")
-		},
-	}
+		assert.Equal(t, "Reacting to approved event", recorder.Body.String())
+	})
 
-	recorder := doRequest(provider, usePayload(t, "../payload/merge_request-approved.json"))
+	t.Run("Failed", func(t *testing.T) {
+		provider := &SpyProvider{
+			NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
+				return errors.New("NotifyMergeRequestApproved failed (on purpose)")
+			},
+		}
 
-	assert.Equal(t, "Error -> NotifyMergeRequestApproved failed (on purpose)\n", recorder.Body.String())
+		recorder := doRequest(provider, usePayload(t, "../payload/merge_request-approved.json"))
+
+		assert.Equal(t, "Error -> NotifyMergeRequestApproved failed (on purpose)\n", recorder.Body.String())
+	})
+
 }
 
 // TODO(malukenho): get real payload for these events, right now I'm changing just the ObjectAttributes.Action
