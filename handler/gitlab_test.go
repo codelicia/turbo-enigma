@@ -8,24 +8,12 @@ import (
 	"strings"
 	"testing"
 	"turboenigma/handler"
+	"turboenigma/mocks"
 	"turboenigma/model"
 	"turboenigma/provider"
 
 	"github.com/stretchr/testify/assert"
 )
-
-// todo move SpyProvider to another file
-type SpyProvider struct {
-	NotifyMergeRequestOpenedFunc     func(mergeRequest model.MergeRequestInfo) error
-	NotifyMergeRequestApprovedFunc   func(mergeRequest model.MergeRequestInfo) error
-	NotifyMergeRequestUnapprovedFunc func(mergeRequest model.MergeRequestInfo) error
-	NotifyMergeRequestCloseFunc      func(mergeRequest model.MergeRequestInfo) error
-	NotifyMergeRequestReopenFunc     func(mergeRequest model.MergeRequestInfo) error
-	NotifyMergeRequestUpdateFunc     func(mergeRequest model.MergeRequestInfo) error
-	NotifyMergeRequestApprovalFunc   func(mergeRequest model.MergeRequestInfo) error
-	NotifyMergeRequestUnapprovalFunc func(mergeRequest model.MergeRequestInfo) error
-	NotifyMergeRequestMergedFunc     func(mergeRequest model.MergeRequestInfo) error
-}
 
 func usePayload(t *testing.T, filepath string) string {
 	t.Helper()
@@ -44,36 +32,8 @@ func doRequest(provider provider.Provider, content string) *httptest.ResponseRec
 	return recorder
 }
 
-func (s *SpyProvider) NotifyMergeRequestOpened(mergeRequest model.MergeRequestInfo) error {
-	return s.NotifyMergeRequestOpenedFunc(mergeRequest)
-}
-func (s *SpyProvider) NotifyMergeRequestApproved(mergeRequest model.MergeRequestInfo) error {
-	return s.NotifyMergeRequestApprovedFunc(mergeRequest)
-}
-func (s *SpyProvider) NotifyMergeRequestUnapproved(mergeRequest model.MergeRequestInfo) error {
-	return s.NotifyMergeRequestUnapprovalFunc(mergeRequest)
-}
-func (s *SpyProvider) NotifyMergeRequestClose(mergeRequest model.MergeRequestInfo) error {
-	return s.NotifyMergeRequestCloseFunc(mergeRequest)
-}
-func (s *SpyProvider) NotifyMergeRequestReopen(mergeRequest model.MergeRequestInfo) error {
-	return s.NotifyMergeRequestReopenFunc(mergeRequest)
-}
-func (s *SpyProvider) NotifyMergeRequestUpdate(mergeRequest model.MergeRequestInfo) error {
-	return s.NotifyMergeRequestUpdateFunc(mergeRequest)
-}
-func (s *SpyProvider) NotifyMergeRequestApproval(mergeRequest model.MergeRequestInfo) error {
-	return s.NotifyMergeRequestApprovalFunc(mergeRequest)
-}
-func (s *SpyProvider) NotifyMergeRequestUnapproval(mergeRequest model.MergeRequestInfo) error {
-	return s.NotifyMergeRequestUnapprovalFunc(mergeRequest)
-}
-func (s *SpyProvider) NotifyMergeRequestMerged(mergeRequest model.MergeRequestInfo) error {
-	return s.NotifyMergeRequestMergedFunc(mergeRequest)
-}
-
 func TestPostOnSlack(t *testing.T) {
-	provider := &SpyProvider{
+	provider := &mocks.SpyProvider{
 		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.Equal(t, "https://gitlab.com/alexandre.eher/turbo-enigma/-/merge_requests/1", mergeRequest.ObjectAttributes.URL)
 			assert.Equal(t, "Add LICENSE", mergeRequest.ObjectAttributes.Title)
@@ -89,7 +49,7 @@ func TestPostOnSlack(t *testing.T) {
 }
 
 func TestPostOnSlackWithEmptyBody(t *testing.T) {
-	provider := &SpyProvider{
+	provider := &mocks.SpyProvider{
 		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.FailNow(t, "Code should not reach this method")
 
@@ -104,7 +64,7 @@ func TestPostOnSlackWithEmptyBody(t *testing.T) {
 }
 
 func TestPostOnSlackWithNewIssue(t *testing.T) {
-	provider := &SpyProvider{
+	provider := &mocks.SpyProvider{
 		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.FailNow(t, "Code should not reach this method")
 
@@ -118,7 +78,7 @@ func TestPostOnSlackWithNewIssue(t *testing.T) {
 }
 
 func TestPostOnSlackWithMergeRequestMerged(t *testing.T) {
-	provider := &SpyProvider{
+	provider := &mocks.SpyProvider{
 		NotifyMergeRequestMergedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.Equal(t, mergeRequest.ObjectAttributes.Action, "merge")
 			return
@@ -133,7 +93,7 @@ func TestPostOnSlackWithMergeRequestMerged(t *testing.T) {
 func TestApprovedAction(t *testing.T) {
 
 	t.Run("Happy path", func(t *testing.T) {
-		provider := &SpyProvider{
+		provider := &mocks.SpyProvider{
 			NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 				assert.Equal(t, mergeRequest.ObjectAttributes.Action, "approved")
 				return
@@ -146,7 +106,7 @@ func TestApprovedAction(t *testing.T) {
 	})
 
 	t.Run("Failed", func(t *testing.T) {
-		provider := &SpyProvider{
+		provider := &mocks.SpyProvider{
 			NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 				return errors.New("NotifyMergeRequestApproved failed (on purpose)")
 			},
@@ -174,7 +134,7 @@ func TestApprovedAction(t *testing.T) {
 // }
 
 func TestPostOnSlackWithMergeRequestRejected(t *testing.T) {
-	provider := &SpyProvider{
+	provider := &mocks.SpyProvider{
 		NotifyMergeRequestOpenedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			assert.FailNow(t, "Code should not reach this method")
 			return
@@ -187,7 +147,7 @@ func TestPostOnSlackWithMergeRequestRejected(t *testing.T) {
 }
 
 func TestPostOnSlackWithReactToMessageFailure(t *testing.T) {
-	provider := &SpyProvider{
+	provider := &mocks.SpyProvider{
 		NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
 			return errors.New("Error from ReactToMessage")
 		},
