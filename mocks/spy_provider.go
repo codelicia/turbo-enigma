@@ -23,7 +23,7 @@ func (s *SpyProvider) NotifyMergeRequestApproved(mergeRequest model.MergeRequest
 	return s.NotifyMergeRequestApprovedFunc(mergeRequest)
 }
 func (s *SpyProvider) NotifyMergeRequestUnapproved(mergeRequest model.MergeRequestInfo) error {
-	return s.NotifyMergeRequestUnapprovalFunc(mergeRequest)
+	return s.NotifyMergeRequestUnapprovedFunc(mergeRequest)
 }
 func (s *SpyProvider) NotifyMergeRequestClose(mergeRequest model.MergeRequestInfo) error {
 	return s.NotifyMergeRequestCloseFunc(mergeRequest)

@@ -2,6 +2,7 @@ package handler_test
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -31,6 +32,9 @@ func doRequest(provider provider.Provider, content string) *httptest.ResponseRec
 
 	return recorder
 }
+
+// Describe all test cases here
+var actions = [2]string{"approved", "unapproved"}
 
 func TestPostOnSlack(t *testing.T) {
 	provider := &mocks.SpyProvider{
@@ -119,19 +123,48 @@ func TestApprovedAction(t *testing.T) {
 
 }
 
-// TODO(malukenho): get real payload for these events, right now I'm changing just the ObjectAttributes.Action
-// func TestPostOnSlackWithMergeRequestUnapproved(t *testing.T) {
-// 	provider := &SpyProvider{
-// 		NotifyMergeRequestUnapprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
-// 			assert.Equal(t, mergeRequest.ObjectAttributes.Action, "unapproved")
-// 			return
-// 		},
-// 	}
+func TestGenericAction(t *testing.T) {
 
-// 	recorder := doRequest(provider, usePayload(t, "../payload/merge_request-approved.json"))
+	configureForAction := func(t *testing.T, action string) func(mergeRequest model.MergeRequestInfo) (err error) {
+		return func(mergeRequest model.MergeRequestInfo) (err error) {
+			assert.Equal(t, mergeRequest.ObjectAttributes.Action, action)
+			return
+		}
+	}
+	for _, action := range actions {
 
-// 	assert.Equal(t, "Reacting to unapproved event", recorder.Body.String())
-// }
+		t.Run(fmt.Sprintf("Happy path %s", action), func(t *testing.T) {
+			provider := &mocks.SpyProvider{
+				NotifyMergeRequestApprovalFunc:   configureForAction(t, action),
+				NotifyMergeRequestApprovedFunc:   configureForAction(t, action),
+				NotifyMergeRequestCloseFunc:      configureForAction(t, action),
+				NotifyMergeRequestMergedFunc:     configureForAction(t, action),
+				NotifyMergeRequestOpenedFunc:     configureForAction(t, action),
+				NotifyMergeRequestReopenFunc:     configureForAction(t, action),
+				NotifyMergeRequestUnapprovalFunc: configureForAction(t, action),
+				NotifyMergeRequestUnapprovedFunc: configureForAction(t, action),
+				NotifyMergeRequestUpdateFunc:     configureForAction(t, action),
+			}
+			recorder := doRequest(provider, usePayload(t, fmt.Sprintf("../payload/merge_request-%s.json", action)))
+
+			assert.Equal(t, fmt.Sprintf("Reacting to %s event", action), recorder.Body.String())
+		})
+
+	}
+
+	t.Run("Failed", func(t *testing.T) {
+		provider := &mocks.SpyProvider{
+			NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
+				return errors.New("NotifyMergeRequestApproved failed (on purpose)")
+			},
+		}
+
+		recorder := doRequest(provider, usePayload(t, "../payload/merge_request-approved.json"))
+
+		assert.Equal(t, "Error -> NotifyMergeRequestApproved failed (on purpose)\n", recorder.Body.String())
+	})
+
+}
 
 func TestPostOnSlackWithMergeRequestRejected(t *testing.T) {
 	provider := &mocks.SpyProvider{
