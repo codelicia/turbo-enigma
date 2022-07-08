@@ -43,17 +43,53 @@ func (g *Gitlab) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 			if err = g.provider.NotifyMergeRequestOpened(mr); err != nil {
 				return err
 			}
-		case "merge":
-			if err = g.provider.NotifyMergeRequestMerged(mr); err != nil {
-				return err
-			}
-			fmt.Fprint(writer, "Reacting to merge event")
-			return
 		case "approved":
 			if err = g.provider.NotifyMergeRequestApproved(mr); err != nil {
 				return err
 			}
 			fmt.Fprint(writer, "Reacting to approved event")
+			return
+		case "unapproved":
+			if err = g.provider.NotifyMergeRequestUnapproved(mr); err != nil {
+				return err
+			}
+			fmt.Fprint(writer, "Reacting to unapproved event")
+			return
+		case "close":
+			if err = g.provider.NotifyMergeRequestClose(mr); err != nil {
+				return err
+			}
+			fmt.Fprint(writer, "Reacting to close event")
+			return
+		case "reopen":
+			if err = g.provider.NotifyMergeRequestReopen(mr); err != nil {
+				return err
+			}
+			fmt.Fprint(writer, "Reacting to reopen event")
+			return
+		case "update":
+			if err = g.provider.NotifyMergeRequestUpdate(mr); err != nil {
+				return err
+			}
+			fmt.Fprint(writer, "Reacting to update event")
+			return
+		case "approval":
+			if err = g.provider.NotifyMergeRequestApproval(mr); err != nil {
+				return err
+			}
+			fmt.Fprint(writer, "Reacting to approval event")
+			return
+		case "unapproval":
+			if err = g.provider.NotifyMergeRequestUnapproval(mr); err != nil {
+				return err
+			}
+			fmt.Fprint(writer, "Reacting to unapproval event")
+			return
+		case "merge":
+			if err = g.provider.NotifyMergeRequestMerged(mr); err != nil {
+				return err
+			}
+			fmt.Fprint(writer, "Reacting to merge event")
 			return
 		default:
 			fmt.Fprint(writer, fmt.Sprintf("We cannot handle %s event action", mr.ObjectAttributes.Action))
