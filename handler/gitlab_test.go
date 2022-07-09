@@ -35,14 +35,14 @@ func doRequest(provider provider.Provider, content string) *httptest.ResponseRec
 
 // Describe all cases, except "open"
 var actions = [8]string{
-    "close",
-    "reopen",
-    "update",
-    "approved",
-    "unapproved",
-    "approval",
-    "unapproval",
-    "merge",
+	"close",
+	"reopen",
+	"update",
+	"approved",
+	"unapproved",
+	"approval",
+	"unapproval",
+	"merge",
 }
 
 func TestPostOnSlack(t *testing.T) {
@@ -161,17 +161,32 @@ func TestGenericAction(t *testing.T) {
 
 	}
 
-	t.Run("Failed", func(t *testing.T) {
-		provider := &mocks.SpyProvider{
-			NotifyMergeRequestApprovedFunc: func(mergeRequest model.MergeRequestInfo) (err error) {
-				return errors.New("NotifyMergeRequestApproved failed (on purpose)")
-			},
+	configureActionForException := func(t *testing.T, action string) func(mergeRequest model.MergeRequestInfo) (err error) {
+		return func(mergeRequest model.MergeRequestInfo) (err error) {
+			return errors.New(fmt.Sprintf("NotifyMergeRequest%s failed (on purpose)", action))
 		}
+	}
+	for _, action := range actions {
 
-		recorder := doRequest(provider, usePayload(t, "../payload/merge_request-approved.json"))
+		t.Run("Failed", func(t *testing.T) {
+			provider := &mocks.SpyProvider{
+				NotifyMergeRequestApprovalFunc:   configureActionForException(t, action),
+				NotifyMergeRequestApprovedFunc:   configureActionForException(t, action),
+				NotifyMergeRequestCloseFunc:      configureActionForException(t, action),
+				NotifyMergeRequestMergedFunc:     configureActionForException(t, action),
+				NotifyMergeRequestOpenedFunc:     configureActionForException(t, action),
+				NotifyMergeRequestReopenFunc:     configureActionForException(t, action),
+				NotifyMergeRequestUnapprovalFunc: configureActionForException(t, action),
+				NotifyMergeRequestUnapprovedFunc: configureActionForException(t, action),
+				NotifyMergeRequestUpdateFunc:     configureActionForException(t, action),
+			}
 
-		assert.Equal(t, "Error -> NotifyMergeRequestApproved failed (on purpose)\n", recorder.Body.String())
-	})
+			recorder := doRequest(provider, usePayload(t, fmt.Sprintf("../payload/merge_request-%s.json", action)))
+
+			assert.Equal(t, fmt.Sprintf("Error -> NotifyMergeRequest%s failed (on purpose)\n", action), recorder.Body.String())
+		})
+
+	}
 
 }
 
