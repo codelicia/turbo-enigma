@@ -33,8 +33,17 @@ func doRequest(provider provider.Provider, content string) *httptest.ResponseRec
 	return recorder
 }
 
-// Describe all test cases here
-var actions = [2]string{"approved", "unapproved"}
+// Describe all cases, except "open"
+var actions = [8]string{
+    "close",
+    "reopen",
+    "update",
+    "approved",
+    "unapproved",
+    "approval",
+    "unapproval",
+    "merge",
+}
 
 func TestPostOnSlack(t *testing.T) {
 	provider := &mocks.SpyProvider{
