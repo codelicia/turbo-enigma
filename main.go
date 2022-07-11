@@ -17,7 +17,6 @@ func InitEnvironment() *Env {
 		"REACTION_RULES",
 		"SLACK_AVATAR_URL",
 		"SLACK_USERNAME",
-		"SLACK_WEBHOOK_URL",
 		"SLACK_TOKEN",
 	})
 	if err != nil {
@@ -44,7 +43,6 @@ func main() {
 		http.DefaultClient,
 		notificationRules,
 		reactionRules,
-		EnvManager.Get("SLACK_WEBHOOK_URL"),
 		EnvManager.Get("SLACK_TOKEN"),
 		EnvManager.Get("MESSAGE"),
 		EnvManager.Get("SLACK_AVATAR_URL"),

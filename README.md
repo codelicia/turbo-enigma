@@ -4,10 +4,13 @@ Turbo Enigma ⚡️🔋
 Environment
 -----------
 
-The application will need the Slack webhook URL. you can place it in the `.env.local`. 
-if the file does not exist, you can duplicate it from `.env.local.dist`, otherwise it will get created the first time you run `make` 
+The application will need the
+[Slack Token](https://api.slack.com/tutorials/tracks/getting-a-token) with
+scopes `message:write`, `search:read` and `reactions:write`. You can place it
+in the `.env.local`. if the file does not exist, you can duplicate it from
+`.env.local.dist`, otherwise it will get created the first time you run `make` 
 ```
-export SLACK_WEBHOOK_URL="https://find-me-on.slack.com"
+export SLACK_TOKEN="find-me-on-slack"
 ```
 
 Deploying
@@ -15,7 +18,7 @@ Deploying
 
 ```
 cp charts/turbo-enigma/values.yaml.dist charts/turbo-enigma/values.yaml
-helm upgrade --install my-enigma charts/turbo-enigma --set slack.webhookUrl=$SLACK_WEBHOOK_URL
+helm upgrade --install my-enigma charts/turbo-enigma --set slack.token=$SLACK_TOKEN
 ```
 
 Redeploying
@@ -23,7 +26,7 @@ Redeploying
 
 ```
 vim charts/turbo-enigma/values.yaml # Adding new notification rules for instance
-helm upgrade --install my-enigma charts/turbo-enigma --set slack.webhookUrl=$SLACK_WEBHOOK_URL
+helm upgrade --install my-enigma charts/turbo-enigma --set slack.token=$SLACK_TOKEN
 ```
 
 Build

@@ -18,6 +18,5 @@ ENV MESSAGE="New Merge Request Created"
 ENV SLACK_AVATAR_URL="https://avatars.githubusercontent.com/u/46966179?s=200&v=4"
 ENV SLACK_USERNAME="codelicia/turbo-enigma"
 ENV SLACK_TOKEN="slack-token"
-ENV SLACK_WEBHOOK_URL="http://turboenigma.localhost"
 
 ENTRYPOINT ["/turbo-enigma"]

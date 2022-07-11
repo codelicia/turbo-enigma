@@ -49,7 +49,6 @@ func TestChannelsForMergeRequestSingleRule(t *testing.T) {
 		http.DefaultClient,
 		notifications,
 		reactions,
-		"https://testing.com",
 		"New MR",
 		"https://avatar",
 		"Username",
@@ -84,7 +83,6 @@ func TestChannelsForMergeRequestMultipleRules(t *testing.T) {
 		http.DefaultClient,
 		notifications,
 		reactions,
-		"https://testing.com",
 		"New MR",
 		"https://avatar",
 		"Username",
@@ -119,7 +117,6 @@ func TestChannelsForMergeRequestMultipleRulesWithMoreThanOneLabel(t *testing.T) 
 		http.DefaultClient,
 		notifications,
 		reactions,
-		"https://testing.com",
 		"New MR",
 		"https://avatar",
 		"Username",
@@ -154,7 +151,6 @@ func TestChannelsForMergeRequestNotMatchingLabel(t *testing.T) {
 		http.DefaultClient,
 		notifications,
 		reactions,
-		"https://testing.com",
 		"New MR",
 		"https://avatar",
 		"Username",
@@ -178,7 +174,7 @@ func TestPostReaction(t *testing.T) {
 		}, nil
 	}
 
-	slack := NewSlack(client, notifications, reactions, "https://testing.com", "New MR", "https://avatar", "Username", "Token")
+	slack := NewSlack(client, notifications, reactions, "New MR", "https://avatar", "Username", "Token")
 
 	locatedMessage := LocatedMessage{
 		channelID:   "channel-id",
@@ -205,7 +201,7 @@ func TestPostReactionFailsWithStatusCode(t *testing.T) {
 		}, nil
 	}
 
-	slack := NewSlack(client, notifications, reactions, "https://testing.com", "New MR", "https://avatar", "Username", "Token")
+	slack := NewSlack(client, notifications, reactions, "New MR", "https://avatar", "Username", "Token")
 
 	locatedMessage := LocatedMessage{
 		channelID:   "channel-id",
@@ -228,7 +224,7 @@ func TestPostReactionFailsWithClientError(t *testing.T) {
 		return nil, errors.New("Error from web server")
 	}
 
-	slack := NewSlack(client, notifications, reactions, "https://testing.com", "New MR", "https://avatar", "Username", "Token")
+	slack := NewSlack(client, notifications, reactions, "New MR", "https://avatar", "Username", "Token")
 
 	locatedMessage := LocatedMessage{
 		channelID:   "channel-id",

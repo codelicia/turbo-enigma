@@ -14,7 +14,6 @@ func setupTestEnvironmentVariables() {
 	os.Setenv("REACTION_RULES", `[{"action":"approved", "reaction":"thumbsup"}]`)
 	os.Setenv("SLACK_AVATAR_URL", "Just testing...")
 	os.Setenv("SLACK_USERNAME", "Just testing...")
-	os.Setenv("SLACK_WEBHOOK_URL", "Just testing...")
 	os.Setenv("SLACK_TOKEN", "xoxp-slack-token")
 }
 
@@ -82,17 +81,6 @@ func TestEnvironmentMissingSlackUsername(t *testing.T) {
 	InitEnvironment()
 
 	t.Error("should panic about missing env: SLACK_USERNAME")
-}
-
-func TestEnvironmentMissingSlackWebhookUrl(t *testing.T) {
-	defer func() { recover() }()
-
-	setupTestEnvironmentVariables()
-	os.Unsetenv("SLACK_WEBHOOK_URL")
-
-	InitEnvironment()
-
-	t.Error("should panic about missing env: SLACK_WEBHOOK_URL")
 }
 
 func TestEnvironmentMissingSlackToken(t *testing.T) {
