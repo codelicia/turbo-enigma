@@ -9,5 +9,4 @@ data:
   MESSAGE: {{ .Values.slack.message | quote }}
   SLACK_AVATAR_URL: {{ .Values.slack.avatarUrl | quote }}
   SLACK_USERNAME: {{ .Values.slack.username | quote }}
-  SLACK_WEBHOOK_URL: {{ .Values.slack.webhookUrl | quote }}
   SLACK_TOKEN: {{ .Values.slack.token | quote }}

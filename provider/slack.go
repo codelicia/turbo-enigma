@@ -37,15 +37,14 @@ type Slack struct {
 	client                                       HTTPClient
 	notificationRules                            []model.NotificationRule
 	reactionRules                                []model.ReactionRule
-	webhookURL, message, avatar, username, token string
+	message, avatar, username, token string
 }
 
-func NewSlack(client HTTPClient, notificationRules []model.NotificationRule, reactionRules []model.ReactionRule, webhookURL, token, message, avatar, username string) *Slack {
+func NewSlack(client HTTPClient, notificationRules []model.NotificationRule, reactionRules []model.ReactionRule, token, message, avatar, username string) *Slack {
 	return &Slack{
 		client:            client,
 		notificationRules: notificationRules,
 		reactionRules:     reactionRules,
-		webhookURL:        webhookURL,
 		token:             token,
 		message:           message,
 		avatar:            avatar,
@@ -143,12 +142,13 @@ func (s *Slack) NotifyMergeRequestMerged(mergeRequest model.MergeRequestInfo) er
 }
 
 func (s *Slack) sendMessage(message []byte) error {
-	req, err := http.NewRequest(http.MethodPost, s.webhookURL, bytes.NewBuffer(message))
+	req, err := http.NewRequest(http.MethodPost, "https://slack.com/api/chat.postMessage", bytes.NewBuffer(message))
 	if err != nil {
 		return err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.token))
 
 	resp, err := s.client.Do(req)
 	if err != nil {
