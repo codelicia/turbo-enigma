@@ -161,14 +161,18 @@ func (s *Slack) sendMessage(message []byte) error {
 	return nil
 }
 
-func (s *Slack) search(searchTerms string) (message LocatedMessage, err error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://slack.com/api/search.messages?query=%s", strings.ReplaceAll(searchTerms, " ", "%20")), bytes.NewBufferString(""))
+func (s *Slack) search(searchTerms string) (message []LocatedMessage, err error) {
+	req, err := http.NewRequest(http.MethodGet, "https://slack.com/api/search.messages", nil)
 	if err != nil {
 		return
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.token))
+
+	q := req.URL.Query()
+	q.Add("query", searchTerms)
+	req.URL.RawQuery = q.Encode()
 
 	resp, err := s.client.Do(req)
 	if err != nil {
@@ -187,36 +191,50 @@ func (s *Slack) search(searchTerms string) (message LocatedMessage, err error) {
 
 	searchResults, err := jsonDecodeMessage(string(b))
 
-	return LocatedMessage{
-		channelID:   searchResults.Messages.Matches[0].Channel.ID,
-		channelName: searchResults.Messages.Matches[0].Channel.Name,
-		timestamp:   searchResults.Messages.Matches[0].Ts,
-		permalink:   searchResults.Messages.Matches[0].Permalink,
-	}, nil
+	if searchResults.Messages.Total == 0 {
+		fmt.Printf("No results found!\n")
+		return
+	}
+
+	locatedMessaged := make([]LocatedMessage, len(searchResults.Messages.Matches))
+
+	for _, x := range searchResults.Messages.Matches {
+		locatedMessaged = append(locatedMessaged, LocatedMessage{
+			channelID:   x.Channel.ID,
+			channelName: x.Channel.Name,
+			timestamp:   x.Ts,
+			permalink:   x.Permalink,
+		})
+	}
+
+	return locatedMessaged, nil
 }
 
-func (s *Slack) postReaction(message LocatedMessage, reactionRule model.ReactionRule) error {
-	data := url.Values{}
-	data.Set("channel", message.channelID)
-	data.Set("name", reactionRule.Reaction)
-	data.Set("timestamp", message.timestamp)
+func (s *Slack) postReaction(message []LocatedMessage, reactionRule model.ReactionRule) error {
+	for _, x := range message {
+		data := url.Values{}
+		data.Set("channel", x.channelID)
+		data.Set("name", reactionRule.Reaction)
+		data.Set("timestamp", x.timestamp)
 
-	req, err := http.NewRequest(http.MethodPost, "https://slack.com/api/reactions.add", strings.NewReader(data.Encode()))
-	if err != nil {
-		return err
-	}
+		req, err := http.NewRequest(http.MethodPost, "https://slack.com/api/reactions.add", strings.NewReader(data.Encode()))
+		if err != nil {
+			return err
+		}
 
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.token))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.token))
 
-	resp, e := s.client.Do(req)
-	if e != nil {
-		return e
-	}
-	defer resp.Body.Close()
+		fmt.Printf("%+v\n", x)
+		resp, e := s.client.Do(req)
+		if e != nil {
+			return e
+		}
+		defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("response codeStatus code: %d, expected 200", resp.StatusCode)
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("response codeStatus code: %d, expected 200", resp.StatusCode)
+		}
 	}
 
 	return nil
