@@ -164,39 +164,6 @@ func TestChannelsForMergeRequestNotMatchingLabel(t *testing.T) {
 	assert.Equal(t, []string{}, slack.ChannelsForMergeRequest(mergeRequest))
 }
 
-func TestSearchForMessage(t *testing.T) {
-	var notifications []model.NotificationRule
-	var reactions []model.ReactionRule
-
-	json := `{"messages": {"matches": [{"channel": {"name": "channel-name", "id": "channel-id"}, "ts": "123", "permalink": "http://message-link"}]}}`
-	client := &MockClient{}
-	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
-	GetDoFunc = func(*http.Request) (*http.Response, error) {
-		return &http.Response{
-			StatusCode: 200,
-			Body:       r,
-		}, nil
-	}
-
-	slack := NewSlack(
-		client,
-		notifications,
-		reactions,
-		"https://testing.com",
-		"New MR",
-		"https://avatar",
-		"Username",
-		"Token",
-	)
-
-	locatedMessage, err := slack.search("New MergeRequest Created")
-	assert.Nil(t, err)
-	assert.Equal(t, "channel-name", locatedMessage.channelName)
-	assert.Equal(t, "channel-id", locatedMessage.channelID)
-	assert.Equal(t, "123", locatedMessage.timestamp)
-	assert.Equal(t, "http://message-link", locatedMessage.permalink)
-}
-
 func TestPostReaction(t *testing.T) {
 	var notifications []model.NotificationRule
 	var reactions []model.ReactionRule

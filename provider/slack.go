@@ -54,15 +54,17 @@ func NewSlack(client HTTPClient, notificationRules []model.NotificationRule, rea
 }
 
 func (s *Slack) ReactToMessage(mergeRequest model.MergeRequestInfo, reactionRule model.ReactionRule) error {
-	// Search for previous message
+	// Search for previous messages
 	var searchTerms = fmt.Sprintf("%s <%s|%s> by %s", s.message, mergeRequest.ObjectAttributes.URL, mergeRequest.ObjectAttributes.Title, mergeRequest.User.Name)
 
-	locatedMessage, err := s.search(searchTerms)
+	locatedMessages, err := s.search(searchTerms)
 	if err != nil {
 		return err
 	}
 
-	s.postReaction(locatedMessage, reactionRule)
+	for _, message := range locatedMessages {
+		s.postReaction(message, reactionRule)
+	}
 
 	return nil
 }
@@ -196,10 +198,10 @@ func (s *Slack) search(searchTerms string) (message []LocatedMessage, err error)
 		return
 	}
 
-	locatedMessaged := make([]LocatedMessage, len(searchResults.Messages.Matches))
+	locatedMessages := make([]LocatedMessage, len(searchResults.Messages.Matches))
 
 	for _, x := range searchResults.Messages.Matches {
-		locatedMessaged = append(locatedMessaged, LocatedMessage{
+		locatedMessages = append(locatedMessages, LocatedMessage{
 			channelID:   x.Channel.ID,
 			channelName: x.Channel.Name,
 			timestamp:   x.Ts,
@@ -207,34 +209,32 @@ func (s *Slack) search(searchTerms string) (message []LocatedMessage, err error)
 		})
 	}
 
-	return locatedMessaged, nil
+	return locatedMessages, nil
 }
 
-func (s *Slack) postReaction(message []LocatedMessage, reactionRule model.ReactionRule) error {
-	for _, x := range message {
-		data := url.Values{}
-		data.Set("channel", x.channelID)
-		data.Set("name", reactionRule.Reaction)
-		data.Set("timestamp", x.timestamp)
+func (s *Slack) postReaction(message LocatedMessage, reactionRule model.ReactionRule) error {
+	data := url.Values{}
+	data.Set("channel", message.channelID)
+	data.Set("name", reactionRule.Reaction)
+	data.Set("timestamp", message.timestamp)
 
-		req, err := http.NewRequest(http.MethodPost, "https://slack.com/api/reactions.add", strings.NewReader(data.Encode()))
-		if err != nil {
-			return err
-		}
+	req, err := http.NewRequest(http.MethodPost, "https://slack.com/api/reactions.add", strings.NewReader(data.Encode()))
+	if err != nil {
+		return err
+	}
 
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.token))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.token))
 
-		fmt.Printf("%+v\n", x)
-		resp, e := s.client.Do(req)
-		if e != nil {
-			return e
-		}
-		defer resp.Body.Close()
+	fmt.Printf("%+v\n", message)
+	resp, e := s.client.Do(req)
+	if e != nil {
+		return e
+	}
+	defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("response codeStatus code: %d, expected 200", resp.StatusCode)
-		}
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("response codeStatus code: %d, expected 200", resp.StatusCode)
 	}
 
 	return nil
