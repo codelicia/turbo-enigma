@@ -164,17 +164,13 @@ func (s *Slack) sendMessage(message []byte) error {
 }
 
 func (s *Slack) search(searchTerms string) (message []LocatedMessage, err error) {
-	req, err := http.NewRequest(http.MethodGet, "https://slack.com/api/search.messages", nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://slack.com/api/search.messages?query=%s", strings.ReplaceAll(searchTerms, " ", "%20")), bytes.NewBufferString(""))
 	if err != nil {
 		return
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.token))
-
-	q := req.URL.Query()
-	q.Add("query", searchTerms)
-	req.URL.RawQuery = q.Encode()
 
 	resp, err := s.client.Do(req)
 	if err != nil {
