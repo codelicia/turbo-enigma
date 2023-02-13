@@ -16,6 +16,9 @@ jobs:
 
       - name: Go Version
         run: go version
+
+      - name: Go Mod tidy
+        run: go mod tidy
       
       - name: Run Revive Action by pulling pre-built image
         uses: docker://morphy/revive-action:v2
