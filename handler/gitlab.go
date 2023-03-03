@@ -1,3 +1,22 @@
+// Gitlab handler
+//
+// This handler is responsible for handling the Gitlab webhook events.
+// It will call the provider to notify the slack channel about the event.
+//
+// The handler will only react to the merge_request events.
+// The handler will only react to the following actions within the merge_request event:
+//    - open
+//    - approved
+//    - unapproved
+//    - close
+//    - reopen
+//    - update
+//    - approval
+//    - unapproval
+//    - merged
+//
+// The handler will ignore all other events and actions, and will return a 200 status code
+// if the event is handled successfully.
 package handler
 
 import (
