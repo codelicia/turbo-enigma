@@ -1,4 +1,4 @@
-// This file contains the data model for a single Merge Request
+// Package model contains the data model for a single Merge Request
 //
 // The data model is generated via https://mholt.github.io/json-to-go/
 // We use this tool to generate the data model, so that we can easily

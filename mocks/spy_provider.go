@@ -1,4 +1,4 @@
-// This mocks package provides a mock implementation of the Provider interface.
+// Package mocks provides a mock implementation of the Provider interface.
 // This mock will be used for testing the handler package.
 package mocks
 

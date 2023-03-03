@@ -1,4 +1,4 @@
-// 'provider' is a package that contains all the notification providers
+// Package provider contains all the notification providers interface
 // that can be used to send notifications to the slack client.
 //
 // The package contains a Provider interface that all the providers
