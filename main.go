@@ -1,3 +1,4 @@
+// Main entry point of the application and the composition root.
 package main
 
 import (

@@ -1,10 +1,15 @@
+// This file contains the data model for a single Merge Request
+//
+// The data model is generated via https://mholt.github.io/json-to-go/
+// We use this tool to generate the data model, so that we can easily
+// add new fields to the data model, without having to manually write
+// the data model.
+//
+// MergeRequestInfo defines the data model of a single Merge Request
 package model
 
 import "time"
 
-// Generated via https://mholt.github.io/json-to-go/
-
-// MergeRequestInfo defines the data model of a single Merge Request
 type MergeRequestInfo struct {
 	ObjectKind string `json:"object_kind"`
 	EventType  string `json:"event_type"`
