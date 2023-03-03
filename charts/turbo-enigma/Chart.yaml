@@ -1,7 +1,15 @@
 apiVersion: v2
 appVersion: "0.1.3"
 description: ⚡️ Gitlab notifier for Slack 🔋
+home: https://github.com/codelicia/turbo-enigma
 icon: https://avatars.githubusercontent.com/u/46966179?s=200&v=4
 name: turbo-enigma
 type: application
 version: 0.1.3
+maintainers:
+  - name: Jefersson Nathan
+    email: malukenho.dev@gmail.com
+    url: https://github.com/malukenho
+  - name: Alexandre Eher
+    email: malukenho.dev@gmail.com
+    url: https://github.com/EHER
