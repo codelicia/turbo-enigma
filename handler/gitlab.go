@@ -1,4 +1,4 @@
-// Gitlab handler
+// Package handler handles Gitlab webhook events.
 //
 // This handler is responsible for handling the Gitlab webhook events.
 // It will call the provider to notify the slack channel about the event.
