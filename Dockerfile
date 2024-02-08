@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.2
+# syntax=docker/dockerfile:1.6
 FROM golang:1.22-alpine AS builder
 WORKDIR /turbo-enigma
 
